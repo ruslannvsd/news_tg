@@ -8,7 +8,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 
-public class TimeConverter {
+public class TimeFuncs {
     private static final String TG_TIME = "yyyy-MM-dd'T'HH:mm:ssXXX";
     private static final String ART_TIME = "hh.mma dd/MM/yy";
     public static long convertToMillis(String datetimeStr) {

@@ -25,7 +25,7 @@ import com.bumptech.glide.Glide;
 import com.example.newstg.R;
 import com.example.newstg.databinding.ArLayBinding;
 import com.example.newstg.obj.Article;
-import com.example.newstg.utils.TimeConverter;
+import com.example.newstg.utils.TimeFuncs;
 
 import java.util.List;
 import java.util.Locale;
@@ -52,7 +52,7 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         long hours = TimeUnit.MILLISECONDS.toHours(differenceMillis);
         long minutes = TimeUnit.MILLISECONDS.toMinutes(differenceMillis) % 60;
         String timeDifference = String.format(Locale.getDefault(), "%dh %dm ago / ", hours, minutes);
-        String time = TimeConverter.convertToReadableTime(art.time);
+        String time = TimeFuncs.convertToReadableTime(art.time);
         h.bnd.channel.setText(art.chnTitle);
         h.bnd.artTime.setText(timeDifference + time);
         h.bnd.keyword.setText(String.valueOf(art.keywords));

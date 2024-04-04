@@ -23,24 +23,24 @@ public class ArticleMaking {
             long hoursMilli = (long) hours * 60 * 60 * 1000;
             long threshold = now - hoursMilli;
             String articleTime = el.select("span." + ART_META + DATETIME).attr(D_TIME);
-            long millis = TimeConverter.convertToMillis(articleTime);
+            long millis = TimeFuncs.convertToMillis(articleTime);
             if (millis >= threshold) {
                 String imgLink = WordFuncs.getLink(el);
                 Element linkElement = el.select("span." + ART_META + " a." + SECTION).first();
                 String artLink = linkElement.attr(LINK);
                 List<String> keywords = new ArrayList<>();
                 keywords.add(keyW);
-                return new Article(chnTitle, imgLink, artLink, body, millis, keywords);
+                return new Article(0, chnTitle, imgLink, artLink, body, millis, keywords);
             }
         } else {
             String articleTime = el.select("span." + ART_META + DATETIME).attr(D_TIME);
-            long millis = TimeConverter.convertToMillis(articleTime);
+            long millis = TimeFuncs.convertToMillis(articleTime);
             String imgLink = WordFuncs.getLink(el);
             Element linkElement = el.select("span." + ART_META + " a." + SECTION).first();
             String art_link = linkElement.attr(LINK);
             List<String> keywords = new ArrayList<>();
             keywords.add(keyW);
-            return new Article(chnTitle, imgLink, art_link, body, millis, keywords);
+            return new Article(0, chnTitle, imgLink, art_link, body, millis, keywords);
         }
         return null;
     }
