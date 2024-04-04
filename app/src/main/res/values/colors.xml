@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="dark_green">#072E00</color>
+    <color name="dark_red">#2E1000</color>
+    <color name="dd_blue">#0B0815</color>
+
+    <color name="one">#003f08</color>
+    <color name="two">#1d3900</color>
+    <color name="three">#2b3300</color>
+    <color name="four">#352d00</color>
+    <color name="five">#3b2600</color>
+    <color name="six">#3e1f00</color>
+    <color name="seven">#250F00</color>
+
+    <color name="green">#3E7500</color>
+
+    <color name="w_one">#ffef98</color>
+    <color name="w_two">#def6a1</color>
+    <color name="w_three">#bcfcb4</color>
+    <color name="w_four">#98ffcd</color>
+
+    <color name="yellow">#ECFF3C</color>
+    <color name="gray">#424242</color>
+</resources>
