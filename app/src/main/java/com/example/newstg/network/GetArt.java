@@ -94,7 +94,8 @@ public class GetArt {
                     handler.post(() -> {
                         if (dialog != null && bnd != null) {
                             bnd.progressBar.setProgress(currentProgress);
-                            bnd.progressText.setText(String.format("%d/%d", currentProgress, links.size()));
+                            String text = String.format("%d/%d", currentProgress, links.size());
+                            bnd.progressText.setText(text);
                         }
                     });
                     Log.i("Link", link);
@@ -104,12 +105,16 @@ public class GetArt {
                         String chnTitle = doc.select("meta[property=og:title]").first().attr("content");
                         for (Element section : messageSections) {
                             Elements allTextDivs = section.select("div." + TEXT_DIV + JS_TEXT);
+                            boolean hasVideo = !section.select(Cons.VIDEO).isEmpty();
                             for (Element articleBody : allTextDivs) {
                                 if (articleBody.parent() != null && !articleBody.parent().hasClass("tgme_widget_message_reply")) {
                                     for (Word keyword : keywords) {
                                         String word = keyword.getWord();
                                         String artBody = replaceBR(articleBody);
                                         String lower = artBody.toLowerCase();
+                                        if (hasVideo) {
+                                            artBody = "[VIDEO]\n\n" + artBody;
+                                        }
                                         if (!word.contains("_")) {
                                             if (lower.contains(word.toLowerCase())) {
                                                 Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
@@ -171,7 +176,7 @@ public class GetArt {
             };
             executorService.submit(task);
             window.dismiss();
-            executorService.shutdown();
+            //executorService.shutdown();
         });
     }
     @NonNull

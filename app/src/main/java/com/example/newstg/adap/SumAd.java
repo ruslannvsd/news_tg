@@ -39,11 +39,7 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
         h.bnd.keyword.setText(sum);
         int color = cardBgColor(wd.getNum(), ctx);
         h.bnd.card.setBackgroundColor(color);
-        if (wd.getImp()) {
-            h.bnd.keyword.setTextColor(ContextCompat.getColor(ctx, R.color.yellow));
-        } else {
-            h.bnd.keyword.setTextColor(ContextCompat.getColor(ctx, R.color.white));
-        }
+        h.bnd.keyword.setTextColor(wd.getColor());
 
         if (pressed == p) {
             h.bnd.card.setBackgroundColor(ctx.getColor(R.color.black));

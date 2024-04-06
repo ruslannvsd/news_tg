@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -13,12 +14,18 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.newstg.adap.ArtAd;
 import com.example.newstg.adap.SumAd;
 import com.example.newstg.consts.Cons;
 import com.example.newstg.data.WordVM;
 import com.example.newstg.databinding.FragmentFirstBinding;
+import com.example.newstg.network.WorkMng;
 import com.example.newstg.obj.Article;
 import com.example.newstg.obj.Word;
 import com.example.newstg.popups.InputPopup;
@@ -27,6 +34,7 @@ import com.google.android.flexbox.JustifyContent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
 
@@ -56,6 +64,8 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         artAd = new ArtAd();
         sumRv = bnd.summaryRv;
         sumAd = new SumAd(this);
+        bnd.on.setOnClickListener(v -> schedulePeriodicWork());
+        bnd.off.setOnClickListener(v -> cancelPeriodicWork());
         bnd.makeChg.setOnClickListener(v ->
                 new InputPopup().inputPopup(
                         requireContext(),
@@ -119,5 +129,18 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         }
         rv.setLayoutManager(layoutManager);
         rv.setAdapter(ad);
+    }
+
+    private void schedulePeriodicWork() {
+        int hours = 6;
+        Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+        PeriodicWorkRequest newRequest = new PeriodicWorkRequest.Builder(WorkMng.class, hours, TimeUnit.HOURS)
+                .setConstraints(constraints).build();
+        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork("PeriodicWork", ExistingPeriodicWorkPolicy.KEEP, newRequest);
+        Toast.makeText(requireContext(), "Notifications Set", Toast.LENGTH_SHORT).show();
+    }
+    private void cancelPeriodicWork() {
+        WorkManager.getInstance(requireContext()).cancelUniqueWork("PeriodicWork");
+        Toast.makeText(requireContext(), "Notifications Cancelled", Toast.LENGTH_SHORT).show();
     }
 }

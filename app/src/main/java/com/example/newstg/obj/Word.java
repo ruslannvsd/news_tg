@@ -9,23 +9,23 @@ public class Word {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id") private int id;
     @ColumnInfo(name = "word") private String word;
-    @ColumnInfo(name = "imp") private boolean imp;
+    @ColumnInfo(name = "color") private int color;
     @ColumnInfo(name = "num") private int num;
-    public Word(int id, String word, boolean imp, int num) {
+    public Word(int id, String word, int color, int num) {
         this.id = id;
         this.word = word;
-        this.imp = imp;
+        this.color = color;
         this.num = num;
     }
     // setters
     public void setId(int id) { this.id = id; }
     public void setWord(String word) { this.word = word; }
-    public void setImp(boolean imp) { this.imp = imp; }
+    public void setColor(int color) { this.color = color; }
     public void setNum(int num) { this.num = num; }
 
     // getters
     public int getId() { return id; }
     public String getWord() { return word; }
-    public boolean getImp() { return imp; }
+    public int getColor() { return color; }
     public int getNum() { return num; }
 }

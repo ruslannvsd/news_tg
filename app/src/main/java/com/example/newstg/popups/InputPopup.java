@@ -66,12 +66,20 @@ public class InputPopup {
         bnd.enterWords.setOnKeyListener(this::wordsClick);
         bnd.period.setText("24");
         bnd.start.setOnClickListener(v -> {
+            int hours;
+            if (bnd.period.getText().toString().isEmpty()) {
+                hours = 100;
+            } else {
+                hours = Integer.parseInt(bnd.period.getText().toString());
+            }
+            closeKeyboard(v);
+            window.dismiss();
             Log.d("InputPopup", "Start button clicked");
-            Toast.makeText(ctx, "Search started ...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ctx, hours + " hour(s). Search started ...", Toast.LENGTH_SHORT).show();
             new GetArt().getArt(
                     ctx,
                     owner,
-                    Integer.parseInt(bnd.period.getText().toString()),
+                    hours,
                     window,
                     artRv,
                     artAd,
@@ -79,8 +87,6 @@ public class InputPopup {
                     sumAd,
                     wordVM
             );
-            closeKeyboard(v);
-            window.dismiss();
         });
     }
 
@@ -113,7 +119,7 @@ public class InputPopup {
                     String input = bnd.enterWords.getText().toString().trim();
                     if (!input.isEmpty()) {
                         if (!exists) {
-                            Word word = new Word(0, input, false, 0);
+                            Word word = new Word(0, input, ctx.getColor(R.color.c_gray), 0);
                             wordVm.insWd(word);
                             Toast.makeText(ctx, input + " is added", Toast.LENGTH_SHORT).show();
                             bnd.enterWords.setText("");

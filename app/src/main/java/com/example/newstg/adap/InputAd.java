@@ -39,13 +39,8 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
         Word word = words.get(p);
         String title = word.getWord();
         h.bnd.word.setText(title);
-
-        if (word.getImp()) {
-            h.bnd.card.setCardBackgroundColor(ctx.getColor(R.color.dark_green));
-        } else {
-            h.bnd.card.setCardBackgroundColor(ctx.getColor(R.color.dark_red));
-        }
-
+        h.bnd.word.setTextColor(word.getColor());
+        h.bnd.card.setCardBackgroundColor(ctx.getColor(R.color.gray));
         h.itemView.setOnClickListener(v -> showPopupMenu(v, word, p));
     }
 
@@ -65,19 +60,40 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
         popupMenu.inflate(R.menu.item_menu);
         popupMenu.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.on_off) {
-                Word updWd = new Word(wd.getId(), wd.getWord(), !wd.getImp(), wd.getNum());
-                wordVm.updWd(updWd);
-                this.notifyItemChanged(p);
-                return true;
-            }
-            else if (id == R.id.delete) {
+            if (id == R.id.yellow) {
+                Word updWdYellow = new Word(wd.getId(), wd.getWord(), ctx.getColor(R.color.c_yellow), wd.getNum());
+                wordVm.updWd(updWdYellow);
+                notifyItemChanged(p);
+            } else if (id == R.id.green) {
+                Word updWdGreen = new Word(wd.getId(), wd.getWord(), ctx.getColor(R.color.c_green), wd.getNum());
+                wordVm.updWd(updWdGreen);
+                notifyItemChanged(p);
+            } else if (id == R.id.blue) {
+                Word updWdBlue = new Word(wd.getId(), wd.getWord(), ctx.getColor(R.color.c_blue), wd.getNum());
+                wordVm.updWd(updWdBlue);
+                notifyItemChanged(p);
+            } else if (id == R.id.pink) {
+                Word updWdPink = new Word(wd.getId(), wd.getWord(), ctx.getColor(R.color.c_pink), wd.getNum());
+                wordVm.updWd(updWdPink);
+                notifyItemChanged(p);
+            } else if (id == R.id.purple) {
+                Word updWdPurple = new Word(wd.getId(), wd.getWord(), ctx.getColor(R.color.c_purple), wd.getNum());
+                wordVm.updWd(updWdPurple);
+                notifyItemChanged(p);
+            } else if (id == R.id.orange) {
+                Word updWdOrange = new Word(wd.getId(), wd.getWord(), ctx.getColor(R.color.c_orange), wd.getNum());
+                wordVm.updWd(updWdOrange);
+                notifyItemChanged(p);
+            } else if (id == R.id.gray) {
+                Word updWdGray = new Word(wd.getId(), wd.getWord(), ctx.getColor(R.color.c_gray), wd.getNum());
+                wordVm.updWd(updWdGray);
+                notifyItemChanged(p);
+            } else if (id == R.id.delete) {
                 wordVm.delWd(wd);
-                this.notifyItemRemoved(p);
-                return true;
+                notifyItemChanged(p);
             }
-            else return false;
-            });
+            return false;
+        });
         popupMenu.show();
     }
 
@@ -93,7 +109,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
     }
     private Comparator<Word> sorting() {
         return Comparator
-                .comparing(Word::getImp, Comparator.reverseOrder())
+                .comparing(Word::getColor, Comparator.reverseOrder())
                 .thenComparing(Word::getWord,
                         Comparator.nullsFirst(
                                 Collator.getInstance(new Locale("ru", "RU"))
