@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -47,7 +48,8 @@ public class InputPopup {
                            RecyclerView artRv,
                            ArtAd artAd,
                            RecyclerView sumRv,
-                           SumAd sumAd
+                           SumAd sumAd,
+                           TextView unique
     ) {
         this.ctx = ctx;
         this.wordVm = wordVM;
@@ -64,7 +66,7 @@ public class InputPopup {
         wordsToRv();
 
         bnd.enterWords.setOnKeyListener(this::wordsClick);
-        bnd.period.setText("24");
+        bnd.period.setText("12");
         bnd.start.setOnClickListener(v -> {
             int hours;
             if (bnd.period.getText().toString().isEmpty()) {
@@ -85,7 +87,8 @@ public class InputPopup {
                     artAd,
                     sumRv,
                     sumAd,
-                    wordVM
+                    wordVM,
+                    unique
             );
         });
     }

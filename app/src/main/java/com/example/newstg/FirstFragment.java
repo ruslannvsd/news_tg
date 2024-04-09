@@ -3,9 +3,11 @@ package com.example.newstg;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,7 +35,9 @@ import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
@@ -45,6 +49,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
     ArtAd artAd;
     RecyclerView sumRv;
     SumAd sumAd;
+    TextView unique;
 
     @Override
     public View onCreateView(
@@ -59,6 +64,10 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         wordVM = new ViewModelProvider(this).get(WordVM.class);
+        unique = bnd.unique;
+        if (TextUtils.isEmpty(unique.getText())) {
+            unique.setVisibility(View.GONE);
+        }
         owner = getViewLifecycleOwner();
         artRv = bnd.articleRv;
         artAd = new ArtAd();
@@ -66,6 +75,9 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         sumAd = new SumAd(this);
         bnd.on.setOnClickListener(v -> schedulePeriodicWork());
         bnd.off.setOnClickListener(v -> cancelPeriodicWork());
+        bnd.channel.setOnClickListener(v -> {
+            Toast.makeText(requireContext(), "Cool button", Toast.LENGTH_LONG).show();
+        });
         bnd.makeChg.setOnClickListener(v ->
                 new InputPopup().inputPopup(
                         requireContext(),
@@ -74,7 +86,8 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
                         artRv,
                         artAd,
                         sumRv,
-                        sumAd
+                        sumAd,
+                        bnd.unique
                 )
         );
         wordVM.getArticles().observe(getViewLifecycleOwner(), articles -> {
@@ -100,12 +113,14 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
             List<Article> customArt = new ArrayList<>();
             if (keyword.getWord().equals(Cons.ALL)) {
                 customArt = articles;
+                uniqueKeywords(new ArrayList<>());
             } else {
                 for (Article article : articles) {
                     if (article.keywords.contains(keyword.getWord())) {
                         customArt.add(article);
                     }
                 }
+                uniqueKeywords(customArt);
             }
             artAd.setArticles(customArt, requireContext());
             artAd.notifyDataSetChanged();
@@ -143,4 +158,18 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         WorkManager.getInstance(requireContext()).cancelUniqueWork("PeriodicWork");
         Toast.makeText(requireContext(), "Notifications Cancelled", Toast.LENGTH_SHORT).show();
     }
+    public void uniqueKeywords(List<Article> articles) {
+        if (articles.isEmpty()) {
+            unique.setVisibility(View.GONE);
+            unique.setText(null);
+            return;
+        }
+        Set<String> uniqueKeywordsSet = new HashSet<>();
+        for (Article article : articles) {
+            uniqueKeywordsSet.addAll(article.keywords);
+        }
+        unique.setVisibility(View.VISIBLE);
+        unique.setText(String.join(" | ", new ArrayList<>(uniqueKeywordsSet)));
+    }
+
 }

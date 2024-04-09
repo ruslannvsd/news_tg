@@ -12,7 +12,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -55,6 +57,7 @@ public class GetArt {
     RecyclerView sumRv;
     SumAd sumAd;
     WordVM wordVm;
+    TextView unique;
 
     ProgressBinding bnd;
     AlertDialog dialog;
@@ -68,7 +71,8 @@ public class GetArt {
             ArtAd artAd,
             RecyclerView sumRv,
             SumAd sumAd,
-            WordVM wordVm
+            WordVM wordVm,
+            TextView unique
     ) {
         this.ctx = ctx;
         this.window = window;
@@ -77,6 +81,8 @@ public class GetArt {
         this.wordVm = wordVm;
         this.sumRv = sumRv;
         this.sumAd = sumAd;
+        this.unique = unique;
+        this.owner = owner;
 
         List<String> links = Cons.CHANNELS;
 
@@ -87,7 +93,7 @@ public class GetArt {
         wordVm.getAll().observe(owner, keywords -> {
             Callable<Void> task = () -> {
                 Handler handler = new Handler(Looper.getMainLooper());
-                int progress = 0; // progress counter
+                int progress = 0;
                 Document doc;
                 for (String link : links) {
                     final int currentProgress = ++progress;
@@ -138,12 +144,17 @@ public class GetArt {
 
                     } catch (IOException e) {
                         String error = Objects.requireNonNull(e.getMessage());
+                        String errorText =
+                                error.substring(0, 1).toUpperCase() + error.substring(1)
+                                        + ". Restart the process.";
                         Log.e("ERROR :", Objects.requireNonNull(e.getMessage()));
                         handler.post(() -> {
                             if (dialog != null && dialog.isShowing()) {
                                 dialog.dismiss();
                             }
                         });
+                        unique.setVisibility(View.VISIBLE);
+                        unique.setText(errorText);
                         Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
                         throw new RuntimeException(e);
                     }

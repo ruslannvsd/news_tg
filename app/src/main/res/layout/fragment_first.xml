@@ -16,13 +16,26 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/unique"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="17dp"
+        android:fontFamily="@font/graublau"
+        android:textSize="17sp"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/summary_rv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/article_rv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginBottom="20dp"
         android:scrollbars="vertical"
-        app:layout_constraintTop_toBottomOf="@+id/summary_rv"
+        app:layout_constraintTop_toBottomOf="@+id/unique"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -40,7 +53,8 @@
         app:backgroundTint="@color/black"
         app:borderWidth="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/off" />
+        app:layout_constraintStart_toStartOf="parent" />
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/off"
@@ -51,6 +65,20 @@
         android:backgroundTint="#0C5000"
         android:contentDescription="Input Popup"
         android:src="@android:drawable/ic_notification_clear_all"
+        app:backgroundTint="@color/black"
+        app:borderWidth="3dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/on" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/channel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="5dp"
+        android:backgroundTint="#0C5000"
+        android:contentDescription="Input Popup"
+        android:src="@android:drawable/ic_menu_mapmode"
         app:backgroundTint="@color/black"
         app:borderWidth="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
