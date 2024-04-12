@@ -1,4 +1,4 @@
-package com.example.newstg.data;
+package com.example.newstg.data.keywords;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -14,7 +14,7 @@ import java.util.List;
 
 @Dao
 public interface WordDao {
-    @Query("select exists(select 1 from word where word.word = :wd limit 1)")
+    @Query("select exists(select 1 from keywords where word = :wd limit 1)")
     LiveData<Boolean> exist(String wd);
 
     @Insert
@@ -26,6 +26,9 @@ public interface WordDao {
     @Delete
     void delWord(Word wd);
 
-    @Query("select * from word")
+    @Query("select * from keywords")
     LiveData<List<Word>> getAll();
+
+    @Query("select * from keywords where status = 1")
+    LiveData<List<Word>> getTrue();
 }

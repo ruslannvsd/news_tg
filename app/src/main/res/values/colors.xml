@@ -22,14 +22,15 @@
     <color name="w_four">#98ffcd</color>
 
     <color name="yellow">#ECFF3C</color>
-    <color name="gray">#424242</color>
+    <color name="gray">#323232</color>
 
-    <color name="c_pink">#F06292</color>
-    <color name="c_blue">#64B5F6</color>
-    <color name="c_green">#81C784</color>
-    <color name="c_yellow">#FFF176</color>
-    <color name="c_purple">#BA68C8</color>
-    <color name="c_orange">#FFB74D</color>
-    <color name="c_gray">#B0BEC5</color>
+    <color name="sky">#7EE3FF</color>
+    <color name="leaf">#7EFF82</color>
+    <color name="sun">#FBDD7D</color>
+    <color name="fox">#FF9E80</color>
+    <color name="evening">#FD7C86</color>
+    <color name="flower">#B37EFF</color>
+    <color name="water">#8091FF</color>
+    <color name="cloud">#9A9A9A</color>
 
 </resources>

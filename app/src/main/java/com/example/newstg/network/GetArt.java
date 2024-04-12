@@ -2,6 +2,7 @@ package com.example.newstg.network;
 
 import static com.example.newstg.consts.Cons.JS_TEXT;
 import static com.example.newstg.consts.Cons.MESSAGE_DIV;
+import static com.example.newstg.consts.Cons.MESS_REPLY;
 import static com.example.newstg.consts.Cons.TEXT_DIV;
 
 import static java.lang.String.join;
@@ -24,9 +25,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.newstg.adap.ArtAd;
 import com.example.newstg.adap.SumAd;
 import com.example.newstg.consts.Cons;
-import com.example.newstg.data.WordVM;
+import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.ProgressBinding;
 import com.example.newstg.obj.Article;
+import com.example.newstg.obj.Chn;
 import com.example.newstg.obj.Word;
 import com.example.newstg.utils.ArticleMaking;
 import com.example.newstg.utils.Count;
@@ -56,7 +58,7 @@ public class GetArt {
     ArtAd artAd;
     RecyclerView sumRv;
     SumAd sumAd;
-    WordVM wordVm;
+    NewsVM wordVm;
     TextView unique;
 
     ProgressBinding bnd;
@@ -71,7 +73,7 @@ public class GetArt {
             ArtAd artAd,
             RecyclerView sumRv,
             SumAd sumAd,
-            WordVM wordVm,
+            NewsVM wordVm,
             TextView unique
     ) {
         this.ctx = ctx;
@@ -84,111 +86,119 @@ public class GetArt {
         this.unique = unique;
         this.owner = owner;
 
-        List<String> links = Cons.CHANNELS;
 
         List<Article> articles = new ArrayList<>();
-        progress(links.size());
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-        wordVm.getAll().observe(owner, keywords -> {
-            Callable<Void> task = () -> {
-                Handler handler = new Handler(Looper.getMainLooper());
-                int progress = 0;
-                Document doc;
-                for (String link : links) {
-                    final int currentProgress = ++progress;
-                    handler.post(() -> {
-                        if (dialog != null && bnd != null) {
-                            bnd.progressBar.setProgress(currentProgress);
-                            String text = String.format("%d/%d", currentProgress, links.size());
-                            bnd.progressText.setText(text);
-                        }
-                    });
-                    Log.i("Link", link);
-                    try {
-                        doc = Jsoup.connect(link).timeout(20 * 1000).get();
-                        Elements messageSections = doc.select("div." + MESSAGE_DIV);
-                        String chnTitle = doc.select("meta[property=og:title]").first().attr("content");
-                        for (Element section : messageSections) {
-                            Elements allTextDivs = section.select("div." + TEXT_DIV + JS_TEXT);
-                            boolean hasVideo = !section.select(Cons.VIDEO).isEmpty();
-                            for (Element articleBody : allTextDivs) {
-                                if (articleBody.parent() != null && !articleBody.parent().hasClass("tgme_widget_message_reply")) {
-                                    for (Word keyword : keywords) {
-                                        String word = keyword.getWord();
-                                        String artBody = replaceBR(articleBody);
-                                        String lower = artBody.toLowerCase();
-                                        if (hasVideo) {
-                                            artBody = "[VIDEO]\n\n" + artBody;
-                                        }
-                                        if (!word.contains("_")) {
-                                            if (lower.contains(word.toLowerCase())) {
-                                                Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
-                                                if (art != null) {
-                                                    articles.add(art);
-                                                }
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        wordVm.lists().observe(owner, lists -> {
+            List<Word> keywords = lists.first;
+            List<Chn> channels = lists.second;
+            if (channels != null) {
+                progress(channels.size());
+                Toast.makeText(ctx, String.valueOf(channels.size()), Toast.LENGTH_SHORT).show();
+                Callable<Void> task = () -> {
+                    int progress = 0;
+                    Document doc;
+                    for (Chn chn : channels) {
+                        String link = chn.link;
+                        final int currentProgress = ++progress;
+                        handler.post(() -> {
+                            if (dialog != null && bnd != null) {
+                                bnd.progressBar.setProgress(currentProgress);
+                                String text = String.format("%d/%d", currentProgress, channels.size());
+                                bnd.progressText.setText(text);
+                            }
+                        });
+                        Log.i("Link", link);
+                        try {
+                            doc = Jsoup.connect(link).timeout(20 * 2000).get();
+
+                            if (doc.text().contains("you can contact")) {
+                                Toast.makeText(ctx, link, Toast.LENGTH_LONG).show();
+                            }
+
+                            Elements messageSections = doc.select("div." + MESSAGE_DIV);
+                            String chnTitle = doc.select("meta[property=og:title]").first().attr("content");
+                            for (Element section : messageSections) {
+                                Elements allTextDivs = section.select("div." + TEXT_DIV + JS_TEXT);
+                                boolean hasVideo = !section.select(Cons.VIDEO).isEmpty();
+                                for (Element articleBody : allTextDivs) {
+                                    if (articleBody.parent() != null && !articleBody.parent().hasClass(MESS_REPLY)) {
+                                        for (Word keyword : keywords) {
+                                            String word = keyword.getWord();
+                                            String artBody = replaceBR(articleBody);
+                                            String lower = artBody.toLowerCase();
+                                            if (hasVideo) {
+                                                artBody = "[VIDEO]\n\n" + artBody;
                                             }
-                                        } else {
-                                            String[] splitWord = word.split("_");
-                                            if (lower.contains(splitWord[0].toLowerCase()) && lower.contains(splitWord[1].toLowerCase())) {
-                                                Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
-                                                if (art != null) {
-                                                    articles.add(art);
+                                            if (!word.contains("_")) {
+                                                if (lower.contains(word.toLowerCase())) {
+                                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
+                                                    if (art != null) {
+                                                        articles.add(art);
+                                                    }
+                                                }
+                                            } else {
+                                                String[] splitWord = word.split("_");
+                                                if (lower.contains(splitWord[0].toLowerCase()) && lower.contains(splitWord[1].toLowerCase())) {
+                                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
+                                                    if (art != null) {
+                                                        articles.add(art);
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
                             }
+                        } catch (IOException e) {
+                            String error = Objects.requireNonNull(e.getMessage());
+                            String errorText =
+                                    error.substring(0, 1).toUpperCase() + error.substring(1)
+                                            + ". Restart the process.";
+                            Log.e("ERROR :", Objects.requireNonNull(e.getMessage()));
+                            handler.post(() -> {
+                                if (dialog != null && dialog.isShowing()) {
+                                    dialog.dismiss();
+                                }
+                            });
+                            unique.setVisibility(View.VISIBLE);
+                            unique.setText(errorText);
+                            Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
+                            throw new RuntimeException(e);
                         }
-
-                    } catch (IOException e) {
-                        String error = Objects.requireNonNull(e.getMessage());
-                        String errorText =
-                                error.substring(0, 1).toUpperCase() + error.substring(1)
-                                        + ". Restart the process.";
-                        Log.e("ERROR :", Objects.requireNonNull(e.getMessage()));
+                    }
+                    if (articles.isEmpty()) {
                         handler.post(() -> {
-                            if (dialog != null && dialog.isShowing()) {
-                                dialog.dismiss();
-                            }
+                            Toast.makeText(ctx, "Nothing has been found", Toast.LENGTH_LONG).show();
                         });
-                        unique.setVisibility(View.VISIBLE);
-                        unique.setText(errorText);
-                        Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
-                        throw new RuntimeException(e);
-                    }
-
-                }
-                if (articles.isEmpty()) {
-                    handler.post(() -> {
-                        Toast.makeText(ctx, "Nothing has been found", Toast.LENGTH_LONG).show();
-                    });
-                } else {
-                    List<Article> finalList;
-                    if (keywords.size() == 1) {
-                        finalList = sorting(articles);
                     } else {
-                        finalList = merging(articles);
+                        List<Article> finalList;
+                        if (keywords.size() == 1) {
+                            finalList = sorting(articles);
+                        } else {
+                            finalList = merging(articles);
+                        }
+                        handler.post(() -> {
+                            wordVm.setArticles(finalList);
+                            wordVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx, wordVm)));
+                            dialog.dismiss();
+                        });
                     }
                     handler.post(() -> {
-                        wordVm.setArticles(finalList);
-                        wordVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx, wordVm)));
-                        dialog.dismiss();
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
                     });
-                }
-                handler.post(() -> {
-                    if (dialog != null && dialog.isShowing()) {
-                        dialog.dismiss();
-                    }
-                });
-                Toast.makeText(ctx, "Search completed.", Toast.LENGTH_SHORT).show();
-                return null;
-            };
-            executorService.submit(task);
-            window.dismiss();
-            //executorService.shutdown();
-        });
+                    Toast.makeText(ctx, "Search completed.", Toast.LENGTH_SHORT).show();
+                    return null;
+                };
+                executorService.submit(task);
+                window.dismiss();
+                // executorService.shutdown();
+            }});
     }
     @NonNull
     public static String replaceBR(@NonNull Element element) {

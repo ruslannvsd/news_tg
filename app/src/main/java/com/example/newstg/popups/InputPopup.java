@@ -23,10 +23,11 @@ import com.example.newstg.R;
 import com.example.newstg.adap.InputAd;
 import com.example.newstg.adap.ArtAd;
 import com.example.newstg.adap.SumAd;
-import com.example.newstg.data.WordVM;
+import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.InputPopupBinding;
 import com.example.newstg.network.GetArt;
 import com.example.newstg.obj.Word;
+import com.example.newstg.utils.CloseKB;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
@@ -35,7 +36,7 @@ public class InputPopup {
     Context ctx;
     PopupWindow window;
     InputAd wordsAd;
-    WordVM wordVm;
+    NewsVM newsVM;
     LifecycleOwner owner;
     RecyclerView artRv;
     ArtAd artAd;
@@ -43,7 +44,7 @@ public class InputPopup {
     SumAd sumAd;
 
     public void inputPopup(@NonNull Context ctx,
-                           WordVM wordVM,
+                           NewsVM newsVM,
                            LifecycleOwner owner,
                            RecyclerView artRv,
                            ArtAd artAd,
@@ -52,7 +53,7 @@ public class InputPopup {
                            TextView unique
     ) {
         this.ctx = ctx;
-        this.wordVm = wordVM;
+        this.newsVM = newsVM;
         this.owner = owner;
         this.artRv = artRv;
         this.artAd = artAd;
@@ -74,7 +75,7 @@ public class InputPopup {
             } else {
                 hours = Integer.parseInt(bnd.period.getText().toString());
             }
-            closeKeyboard(v);
+            new CloseKB().closeKeyboard(v);
             window.dismiss();
             Log.d("InputPopup", "Start button clicked");
             Toast.makeText(ctx, hours + " hour(s). Search started ...", Toast.LENGTH_SHORT).show();
@@ -87,7 +88,7 @@ public class InputPopup {
                     artAd,
                     sumRv,
                     sumAd,
-                    wordVM,
+                    newsVM,
                     unique
             );
         });
@@ -103,53 +104,52 @@ public class InputPopup {
     }
 
     private void wordsToRv() {
-        wordVm.getAll().observe(owner, words -> {
+        newsVM.getAll().observe(owner, words -> {
             FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(ctx);
             layoutManager.setJustifyContent(JustifyContent.FLEX_START);
             bnd.words.setLayoutManager(layoutManager);
             wordsAd.setWords(
                     words,
-                    ctx, wordVm);
+                    ctx, newsVM);
             bnd.words.setAdapter(wordsAd);
         });
     }
 
     private boolean wordsClick(View v, int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-            final Observer<Boolean> existObserver = new Observer<Boolean>() {
-                @Override
-                public void onChanged(Boolean exists) {
-                    String input = bnd.enterWords.getText().toString().trim();
-                    if (!input.isEmpty()) {
-                        if (!exists) {
-                            Word word = new Word(0, input, ctx.getColor(R.color.c_gray), 0);
-                            wordVm.insWd(word);
-                            Toast.makeText(ctx, input + " is added", Toast.LENGTH_SHORT).show();
-                            bnd.enterWords.setText("");
-                            wordsToRv();
-                        } else {
-                            Toast.makeText(ctx, "Keyword's already added.", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(ctx, "Enter Keyword", Toast.LENGTH_SHORT).show();
-                    }
-                    wordVm.exist(input).removeObserver(this);
-                }
-            };
             String inputText = bnd.enterWords.getText().toString().trim();
-            if (!inputText.isEmpty()) {
-                wordVm.exist(inputText).observe(owner, existObserver);
-            } else {
-                Toast.makeText(ctx, "Enter Keyword", Toast.LENGTH_SHORT).show();
+            String[] inputParts = inputText.split(" ");
+            for (String input : inputParts) {
+                final String currentInput = input;
+                final Observer<Boolean> existObserver = new Observer<Boolean>() {
+                    @Override
+                    public void onChanged(Boolean exists) {
+                        if (!currentInput.isEmpty()) {
+                            if (!exists) {
+                                Word word = new Word(0, currentInput, ctx.getColor(R.color.cloud), 0, true);
+                                newsVM.insWd(word);
+                                // Toast.makeText(ctx, currentInput + " is added", Toast.LENGTH_SHORT).show();
+                                bnd.enterWords.setText("");
+                                wordsToRv();
+                            } else {
+                                Toast.makeText(ctx, "Keyword's already added.", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(ctx, "Enter Keyword", Toast.LENGTH_SHORT).show();
+                        }
+                        newsVM.exist(currentInput).removeObserver(this);
+                    }
+                };
+                if (!currentInput.isEmpty()) {
+                    newsVM.exist(currentInput).observe(owner, existObserver);
+                } else {
+                    Toast.makeText(ctx, "Enter Keyword", Toast.LENGTH_SHORT).show();
+                }
             }
-            closeKeyboard(v);
+            Toast.makeText(ctx, "Words are added", Toast.LENGTH_SHORT).show();
+            new CloseKB().closeKeyboard(v);
             return true;
         }
         return true;
-    }
-    private void closeKeyboard(@NonNull View view) {
-        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        view.clearFocus();
     }
 }
