@@ -13,9 +13,6 @@ import java.util.List;
 
 @Dao
 public interface ChnDao {
-    @Query("select exists(select 1 from channels where link = :link limit 1)")
-    LiveData<Boolean> linkExist(String link);
-
     @Insert
     void insChn(Chn chn);
 
@@ -27,4 +24,7 @@ public interface ChnDao {
 
     @Query("select * from channels")
     LiveData<List<Chn>> getAll();
+
+    @Query("DELETE FROM channels WHERE link = :url")
+    void deleteByUrl(String url);
 }

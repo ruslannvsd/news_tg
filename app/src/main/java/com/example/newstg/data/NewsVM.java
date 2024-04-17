@@ -55,8 +55,6 @@ public class NewsVM extends AndroidViewModel {
     public void delWd(Word wd) {
         CompletableFuture.runAsync(() -> newsRep.delWord(wd), Executors.newSingleThreadExecutor());
     }
-    public LiveData<Boolean> exist(String word) {
-        return newsRep.kwExist(word); }
     public LiveData<List<Article>> getArticles() {
         return articlesLD;
     }
@@ -84,6 +82,8 @@ public class NewsVM extends AndroidViewModel {
     public void delChn(Chn chn) {
         CompletableFuture.runAsync(() -> newsRep.delChn(chn), Executors.newSingleThreadExecutor());
     }
-    public LiveData<Boolean> linkExist(String link) {
-        return newsRep.linkExist(link); }
+
+    public void delChn(String chn) {
+        CompletableFuture.runAsync(() -> newsRep.delByUrl(chn), Executors.newSingleThreadExecutor());
+    }
 }

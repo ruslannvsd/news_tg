@@ -32,11 +32,5 @@ public class NewsRep {
     public void updChn(Chn chn) { chnDao.updChn(chn); }
     public void delChn(Chn chn) { chnDao.delChn(chn); }
 
-    // Check for presence of similar instances
-    public LiveData<Boolean> kwExist(String wd) {
-        return wordDao.exist(wd);
-    }
-    public LiveData<Boolean> linkExist(String wd) {
-        return chnDao.linkExist(wd);
-    }
+    public void delByUrl(String chn) { chnDao.deleteByUrl(chn); }
 }

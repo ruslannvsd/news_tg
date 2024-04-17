@@ -88,7 +88,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
                 wordVm.delWd(wd);
                 notifyItemChanged(p);
             }
-            return false;
+            return true;
         });
         popupMenu.show();
     }

@@ -12,7 +12,6 @@ import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +52,8 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         long minutes = TimeUnit.MILLISECONDS.toMinutes(differenceMillis) % 60;
         String timeDifference = String.format(Locale.getDefault(), "%dh %dm ago / ", hours, minutes);
         String time = TimeFuncs.convertToReadableTime(art.time);
-        h.bnd.channel.setText(art.chnTitle);
+        //h.bnd.channel.setText(art.chnTitle);
+        linkify(art.chnTitle, art.link, h.bnd.channel);
         h.bnd.artTime.setText(timeDifference + time);
         h.bnd.keyword.setText(String.valueOf(art.keywords));
         if (!Objects.equals(art.image, "IMG")) {
@@ -63,7 +63,6 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
             Glide.with(ctx).load(R.drawable.line).placeholder(R.drawable.load).into(h.bnd.divider);
             h.bnd.img.setVisibility(View.GONE);
         }
-        setLink(h.bnd.link, art.link);
         SpannableStringBuilder textWithBold = boldWords(art.body, art.keywords);
         h.bnd.artBody.setText(textWithBold);
     }
@@ -85,11 +84,7 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         this.ctx = ctx;
         notifyDataSetChanged();
     }
-    private void setLink(@NonNull TextView tgLink, String link) {
-        tgLink.setText(Html.fromHtml(link, Html.FROM_HTML_MODE_COMPACT));
-        Linkify.addLinks(tgLink, Linkify.ALL);
-        tgLink.setMovementMethod(LinkMovementMethod.getInstance());
-    }
+
     public int cardBgColor(long artTime, Context ctx) {
         long now = System.currentTimeMillis();
         long timeDiff = (artTime - now) / (3600000);
@@ -138,5 +133,10 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
                 startSpan = endSpan;
             }
         }
+    }
+    private void linkify(String title, String url, TextView tv) {
+        String formattedText = "<a href='" + url + "'>" + title + "</a>";
+        tv.setText(Html.fromHtml(formattedText, Html.FROM_HTML_MODE_COMPACT));
+        tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

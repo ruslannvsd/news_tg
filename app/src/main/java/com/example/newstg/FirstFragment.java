@@ -158,6 +158,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
     private void cancelPeriodicWork() {
         WorkManager.getInstance(requireContext()).cancelUniqueWork("PeriodicWork");
         Toast.makeText(requireContext(), "Notifications Cancelled", Toast.LENGTH_SHORT).show();
+        // newsVM.delChn();
     }
     public void uniqueKeywords(List<Article> articles) {
         if (articles.isEmpty()) {

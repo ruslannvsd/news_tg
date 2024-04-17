@@ -80,19 +80,6 @@
                 app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
-                android:id="@+id/link"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="5dp"
-                android:fontFamily="@font/graublau"
-                android:contentDescription="Link"
-                android:minHeight="32dp"
-                android:textAlignment="textEnd"
-                android:textSize="17sp"
-                app:layout_constraintTop_toBottomOf="@id/art_body"
-                app:layout_constraintStart_toStartOf="parent" />
-
-            <TextView
                 android:id="@+id/art_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,7 +88,7 @@
                 android:textAlignment="textEnd"
                 android:textSize="18sp"
                 android:contentDescription="Time"
-                app:layout_constraintTop_toBottomOf="@id/link"
+                app:layout_constraintTop_toBottomOf="@id/art_body"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 

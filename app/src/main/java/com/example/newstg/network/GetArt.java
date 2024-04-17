@@ -20,6 +20,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
+import androidx.core.util.Pair;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.newstg.adap.ArtAd;
@@ -43,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -63,6 +66,7 @@ public class GetArt {
 
     ProgressBinding bnd;
     AlertDialog dialog;
+    Handler handler;
 
     public void getArt(
             Context ctx,
@@ -86,126 +90,74 @@ public class GetArt {
         this.unique = unique;
         this.owner = owner;
 
-
-        List<Article> articles = new ArrayList<>();
-
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
+        handler = new Handler(Looper.getMainLooper());
 
-        wordVm.lists().observe(owner, lists -> {
-            List<Word> keywords = lists.first;
-            List<Chn> channels = lists.second;
-            if (channels != null) {
-                progress(channels.size());
-                Toast.makeText(ctx, String.valueOf(channels.size()), Toast.LENGTH_SHORT).show();
-                Callable<Void> task = () -> {
-                    int progress = 0;
-                    Document doc;
-                    for (Chn chn : channels) {
-                        String link = chn.link;
-                        final int currentProgress = ++progress;
-                        handler.post(() -> {
-                            if (dialog != null && bnd != null) {
-                                bnd.progressBar.setProgress(currentProgress);
-                                String text = String.format("%d/%d", currentProgress, channels.size());
-                                bnd.progressText.setText(text);
-                            }
-                        });
-                        Log.i("Link", link);
-                        try {
-                            doc = Jsoup.connect(link).timeout(20 * 2000).get();
-
-                            if (doc.text().contains("you can contact")) {
-                                Toast.makeText(ctx, link, Toast.LENGTH_LONG).show();
-                            }
-
-                            Elements messageSections = doc.select("div." + MESSAGE_DIV);
-                            String chnTitle = doc.select("meta[property=og:title]").first().attr("content");
-                            for (Element section : messageSections) {
-                                Elements allTextDivs = section.select("div." + TEXT_DIV + JS_TEXT);
-                                boolean hasVideo = !section.select(Cons.VIDEO).isEmpty();
-                                for (Element articleBody : allTextDivs) {
-                                    if (articleBody.parent() != null && !articleBody.parent().hasClass(MESS_REPLY)) {
-                                        for (Word keyword : keywords) {
-                                            String word = keyword.getWord();
-                                            String artBody = replaceBR(articleBody);
-                                            String lower = artBody.toLowerCase();
-                                            if (hasVideo) {
-                                                artBody = "[VIDEO]\n\n" + artBody;
-                                            }
-                                            if (!word.contains("_")) {
-                                                if (lower.contains(word.toLowerCase())) {
-                                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
-                                                    if (art != null) {
-                                                        articles.add(art);
-                                                    }
-                                                }
-                                            } else {
-                                                String[] splitWord = word.split("_");
-                                                if (lower.contains(splitWord[0].toLowerCase()) && lower.contains(splitWord[1].toLowerCase())) {
-                                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
-                                                    if (art != null) {
-                                                        articles.add(art);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } catch (IOException e) {
-                            String error = Objects.requireNonNull(e.getMessage());
-                            String errorText =
-                                    error.substring(0, 1).toUpperCase() + error.substring(1)
-                                            + ". Restart the process.";
-                            Log.e("ERROR :", Objects.requireNonNull(e.getMessage()));
+        // Observer with a wildcard that matches any List<Word> and List<Chn>
+        Observer<Pair<List<Word>, List<Chn>>> observer = new Observer<Pair<List<Word>, List<Chn>>>() {
+            @Override
+            public void onChanged(Pair<List<Word>, List<Chn>> lists) {
+                List<Word> keywords = lists.first;
+                List<Chn> channels = lists.second;
+                if (channels != null) {
+                    progress(channels.size());
+                    Toast.makeText(ctx, String.valueOf(channels.size()), Toast.LENGTH_SHORT).show();
+                    Callable<Void> task = () -> {
+                        List<Article> articles = new ArrayList<>();
+                        int progress = 0;
+                        for (Chn chn : channels) {
+                            String link = chn.link;
+                            final int currentProgress = ++progress;
                             handler.post(() -> {
-                                if (dialog != null && dialog.isShowing()) {
-                                    dialog.dismiss();
+                                String[] parts = link.split("/");
+                                String title = parts[parts.length - 1];
+                                if (dialog != null && bnd != null) {
+                                    bnd.progressBar.setProgress(currentProgress);
+                                    String text = String.format(Locale.UK, "%d/%d\n%s", currentProgress, channels.size(), title);
+                                    bnd.progressText.setText(text);
                                 }
                             });
-                            unique.setVisibility(View.VISIBLE);
-                            unique.setText(errorText);
-                            Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
-                            throw new RuntimeException(e);
+                            articles.addAll(gettingArticles(link, hours, keywords));
                         }
-                    }
-                    if (articles.isEmpty()) {
-                        handler.post(() -> {
-                            Toast.makeText(ctx, "Nothing has been found", Toast.LENGTH_LONG).show();
-                        });
-                    } else {
-                        List<Article> finalList;
-                        if (keywords.size() == 1) {
-                            finalList = sorting(articles);
+                        if (articles.isEmpty()) {
+                            handler.post(() -> {
+                                Toast.makeText(ctx, "Nothing has been found", Toast.LENGTH_LONG).show();
+                            });
                         } else {
-                            finalList = merging(articles);
+                            List<Article> finalList;
+                            if (keywords.size() == 1) {
+                                finalList = sorting(articles);
+                            } else {
+                                finalList = merging(articles);
+                            }
+                            handler.post(() -> {
+                                wordVm.setArticles(finalList);
+                                wordVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx)));
+                                dialog.dismiss();
+                            });
                         }
                         handler.post(() -> {
-                            wordVm.setArticles(finalList);
-                            wordVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx, wordVm)));
-                            dialog.dismiss();
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
                         });
-                    }
-                    handler.post(() -> {
-                        if (dialog != null && dialog.isShowing()) {
-                            dialog.dismiss();
-                        }
-                    });
-                    Toast.makeText(ctx, "Search completed.", Toast.LENGTH_SHORT).show();
-                    return null;
-                };
-                executorService.submit(task);
-                window.dismiss();
-                // executorService.shutdown();
-            }});
+                        Toast.makeText(ctx, "Search completed.", Toast.LENGTH_SHORT).show();
+                        return null;
+                    };
+                    executorService.submit(task);
+                    window.dismiss();
+                    wordVm.lists().removeObserver(this);
+                }
+            }
+        };
+        wordVm.lists().observe(owner, observer);
     }
+
     @NonNull
     public static String replaceBR(@NonNull Element element) {
         String[] articleBodyStr = element.html().split("<br>");
         return Jsoup.parse(join("$$$$$", articleBodyStr)).text().replace("$$$$$", "\n");
     }
-
 
     public List<Article> sorting(@NonNull List<Article> artList) {
         return artList.stream().sorted(Comparator.comparingLong(article -> -article.time))
@@ -239,9 +191,75 @@ public class GetArt {
         builder.setView(bnd.getRoot());
         dialog = builder.create();
         bnd.progressBar.setMax(size);
-        bnd.progressText.setText(String.format("0/%d", size));
+        bnd.progressText.setText(String.format(Locale.UK, "0/%d", size));
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
     }
-}
 
+    private Document fetchDoc(String url) throws IOException {
+        return Jsoup.connect(url).timeout(20 * 1000).get(); // 20 seconds timeout
+    }
+
+    private List<Article> gettingArticles(String link, int hours, List<Word> keywords) {
+        Document doc;
+        List<Article> articles = new ArrayList<>();
+        try {
+            doc = fetchDoc(link);
+
+            if (doc.text().contains("you can contact")) {
+                Toast.makeText(ctx, link, Toast.LENGTH_LONG).show();
+            }
+
+            Elements messageSections = doc.select("div." + MESSAGE_DIV);
+            String chnTitle = doc.select("meta[property=og:title]").first().attr("content");
+            for (Element section : messageSections) {
+                Elements allTextDivs = section.select("div." + TEXT_DIV + JS_TEXT);
+                boolean hasVideo = !section.select(Cons.VIDEO).isEmpty();
+                for (Element articleBody : allTextDivs) {
+                    if (articleBody.parent() != null && !articleBody.parent().hasClass(MESS_REPLY)) {
+                        for (Word keyword : keywords) {
+                            String word = keyword.getWord();
+                            String artBody = replaceBR(articleBody);
+                            String lower = artBody.toLowerCase();
+                            if (hasVideo) {
+                                artBody = "[VIDEO]\n\n" + artBody;
+                            }
+                            if (!word.contains("_")) {
+                                if (lower.contains(word.toLowerCase())) {
+                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
+                                    if (art != null) {
+                                        articles.add(art);
+                                    }
+                                }
+                            } else {
+                                String[] splitWord = word.split("_");
+                                if (lower.contains(splitWord[0].toLowerCase()) && lower.contains(splitWord[1].toLowerCase())) {
+                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, hours);
+                                    if (art != null) {
+                                        articles.add(art);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            String error = Objects.requireNonNull(e.getMessage());
+            String errorText =
+                    error.substring(0, 1).toUpperCase() + error.substring(1)
+                            + ". Restart the process.";
+            Log.e("ERROR :", Objects.requireNonNull(e.getMessage()));
+            handler.post(() -> {
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            });
+            unique.setVisibility(View.VISIBLE);
+            unique.setText(errorText);
+            Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
+            throw new RuntimeException(e);
+        }
+        return articles;
+    }
+}

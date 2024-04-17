@@ -11,7 +11,7 @@ import com.example.newstg.obj.Word;
 import java.util.List;
 
 public class Count {
-    public List<Word> results(List<Word> keywords, List<Article> articles, Context ctx, NewsVM wordVm) {
+    public List<Word> results(List<Word> keywords, List<Article> articles, Context ctx) {
         int total = 0;
         int count = 0;
         for (Word wd : keywords) {
@@ -24,7 +24,7 @@ public class Count {
             total += count;
             count = 0;
         }
-        Word allWord = new Word(0, Cons.ALL, ctx.getColor(R.color.cloud), total, true);
+        Word allWord = new Word(0, Cons.ALL, ctx.getColor(R.color.white), total, true);
         keywords.add(0, allWord);
         return keywords;
     }

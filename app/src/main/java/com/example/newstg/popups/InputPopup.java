@@ -7,8 +7,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +31,11 @@ import com.example.newstg.utils.CloseKB;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
 public class InputPopup {
     InputPopupBinding bnd;
     Context ctx;
@@ -42,6 +47,7 @@ public class InputPopup {
     ArtAd artAd;
     RecyclerView sumRv;
     SumAd sumAd;
+    int color;
 
     public void inputPopup(@NonNull Context ctx,
                            NewsVM newsVM,
@@ -65,9 +71,12 @@ public class InputPopup {
         wordsAd = new InputAd();
         setupPopupWindow(popupView);
         wordsToRv();
+        color = ctx.getColor(R.color.cloud);
 
         bnd.enterWords.setOnKeyListener(this::wordsClick);
         bnd.period.setText("12");
+        bnd.color.setBackgroundColor(color);
+        bnd.color.setOnClickListener(this::showPopupMenu);
         bnd.start.setOnClickListener(v -> {
             int hours;
             if (bnd.period.getText().toString().isEmpty()) {
@@ -91,6 +100,7 @@ public class InputPopup {
                     newsVM,
                     unique
             );
+            bnd.start.clearFocus();
         });
     }
 
@@ -100,7 +110,6 @@ public class InputPopup {
         window.setElevation(2f);
         window.showAtLocation(popupView, Gravity.CENTER, 0, 0);
         PopupWindowCompat.setWindowLayoutType(window, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
-        Toast.makeText(ctx, "Enter 0 hours to cancel", Toast.LENGTH_SHORT).show();
     }
 
     private void wordsToRv() {
@@ -118,38 +127,70 @@ public class InputPopup {
     private boolean wordsClick(View v, int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
             String inputText = bnd.enterWords.getText().toString().trim();
-            String[] inputParts = inputText.split(" ");
-            for (String input : inputParts) {
-                final String currentInput = input;
-                final Observer<Boolean> existObserver = new Observer<Boolean>() {
+            if (inputText.isEmpty()) {
+                Toast.makeText(ctx, "Enter Keyword", Toast.LENGTH_SHORT).show();
+                return true;
+            } else {
+                new CloseKB().closeKeyboard(v);
+
+                Observer<List<Word>> observer = new Observer<List<Word>>() {
                     @Override
-                    public void onChanged(Boolean exists) {
-                        if (!currentInput.isEmpty()) {
-                            if (!exists) {
-                                Word word = new Word(0, currentInput, ctx.getColor(R.color.cloud), 0, true);
-                                newsVM.insWd(word);
-                                // Toast.makeText(ctx, currentInput + " is added", Toast.LENGTH_SHORT).show();
-                                bnd.enterWords.setText("");
-                                wordsToRv();
-                            } else {
-                                Toast.makeText(ctx, "Keyword's already added.", Toast.LENGTH_SHORT).show();
-                            }
-                        } else {
-                            Toast.makeText(ctx, "Enter Keyword", Toast.LENGTH_SHORT).show();
+                    public void onChanged(List<Word> keywords) {
+                        HashSet<String> existingSet = new HashSet<>();
+                        for (Word kw : keywords) {
+                            existingSet.add(kw.getWord());
                         }
-                        newsVM.exist(currentInput).removeObserver(this);
+                        StringBuilder added = new StringBuilder();
+                        StringBuilder existed = new StringBuilder();
+                        for (String input : inputText.split("\\s+")) {
+                            if (!existingSet.contains(input)) {
+                                existingSet.add(input);
+                                Word newWord = new Word(0, input, color, 0, true);
+                                newsVM.insWd(newWord);
+                                added.append(" ").append(input);
+                            } else {
+                                existed.append(" ").append(input);
+                            }
+                        }
+                        if (added.length() > 0) {
+                            Toast.makeText(ctx, "ADDED: " + added.toString().trim(), Toast.LENGTH_SHORT).show();
+                        }
+                        if (existed.length() > 0) {
+                            Toast.makeText(ctx, "EXIST: " + existed.toString().trim(), Toast.LENGTH_SHORT).show();
+                        }
+                        bnd.enterWords.setText("");
+                        wordsToRv();
+                        newsVM.getAll().removeObserver(this);
                     }
                 };
-                if (!currentInput.isEmpty()) {
-                    newsVM.exist(currentInput).observe(owner, existObserver);
-                } else {
-                    Toast.makeText(ctx, "Enter Keyword", Toast.LENGTH_SHORT).show();
-                }
+                newsVM.getAll().observe(owner, observer);
             }
-            Toast.makeText(ctx, "Words are added", Toast.LENGTH_SHORT).show();
-            new CloseKB().closeKeyboard(v);
             return true;
         }
-        return true;
+        return false;
+    }
+
+    private void showPopupMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(ctx, view);
+        popupMenu.inflate(R.menu.color_menu);
+        Map<Integer, Integer> colorMap = new HashMap<>();
+        colorMap.put(R.id.sky, R.color.sky);
+        colorMap.put(R.id.leaf, R.color.leaf);
+        colorMap.put(R.id.sun, R.color.sun);
+        colorMap.put(R.id.fox, R.color.fox);
+        colorMap.put(R.id.evening, R.color.evening);
+        colorMap.put(R.id.flower, R.color.flower);
+        colorMap.put(R.id.water, R.color.water);
+        colorMap.put(R.id.cloud, R.color.cloud);
+        popupMenu.setOnMenuItemClickListener(item -> {
+            Integer colorResource = colorMap.get(item.getItemId());
+            if (colorResource != null) {
+                color = ctx.getColor(colorResource);
+                bnd.color.setBackgroundColor(color);
+                return true;
+            }
+            return false;
+        });
+        popupMenu.show();
     }
 }
