@@ -52,7 +52,6 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         long minutes = TimeUnit.MILLISECONDS.toMinutes(differenceMillis) % 60;
         String timeDifference = String.format(Locale.getDefault(), "%dh %dm ago / ", hours, minutes);
         String time = TimeFuncs.convertToReadableTime(art.time);
-        //h.bnd.channel.setText(art.chnTitle);
         linkify(art.chnTitle, art.link, h.bnd.channel);
         h.bnd.artTime.setText(timeDifference + time);
         h.bnd.keyword.setText(String.valueOf(art.keywords));

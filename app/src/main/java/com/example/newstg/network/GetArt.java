@@ -98,7 +98,6 @@ public class GetArt {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         handler = new Handler(Looper.getMainLooper());
 
-        // Observer with a wildcard that matches any List<Word> and List<Chn>
         Observer<Pair<List<Word>, List<Chn>>> observer = new Observer<Pair<List<Word>, List<Chn>>>() {
             @Override
             public void onChanged(Pair<List<Word>, List<Chn>> lists) {
