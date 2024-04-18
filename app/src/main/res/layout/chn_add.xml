@@ -20,7 +20,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:hint="Enter words"
+                android:hint="Channel / channels divided by space"
                 android:textSize="20sp"
                 android:textColor="@color/white"
                 android:inputType="text"

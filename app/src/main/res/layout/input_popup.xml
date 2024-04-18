@@ -70,7 +70,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:hint="1-48"
+                android:hint="1-99"
                 android:inputType="number"
                 android:maxLength="2"
                 android:maxLines="1"

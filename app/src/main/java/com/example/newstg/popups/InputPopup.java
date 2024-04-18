@@ -83,6 +83,9 @@ public class InputPopup {
                 hours = 100;
             } else {
                 hours = Integer.parseInt(bnd.period.getText().toString());
+                if (hours > 100 || hours < 1) {
+                    hours = 100;
+                }
             }
             new CloseKB().closeKeyboard(v);
             window.dismiss();
