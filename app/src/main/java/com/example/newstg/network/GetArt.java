@@ -22,13 +22,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.core.util.Pair;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.newstg.R;
 import com.example.newstg.adap.ArtAd;
-import com.example.newstg.adap.SumAd;
 import com.example.newstg.consts.Cons;
 import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.ProgressBinding;
@@ -65,7 +67,6 @@ public class GetArt {
     RecyclerView artRv;
     ArtAd artAd;
     RecyclerView sumRv;
-    SumAd sumAd;
     NewsVM wordVm;
     TextView unique;
 
@@ -81,9 +82,9 @@ public class GetArt {
             RecyclerView artRv,
             ArtAd artAd,
             RecyclerView sumRv,
-            SumAd sumAd,
             NewsVM wordVm,
-            TextView unique
+            TextView unique,
+            @Nullable String[] words
     ) {
         this.ctx = ctx;
         this.window = window;
@@ -91,7 +92,6 @@ public class GetArt {
         this.artAd = artAd;
         this.wordVm = wordVm;
         this.sumRv = sumRv;
-        this.sumAd = sumAd;
         this.unique = unique;
         this.owner = owner;
 
@@ -103,6 +103,25 @@ public class GetArt {
             public void onChanged(Pair<List<Word>, List<Chn>> lists) {
                 List<Word> keywords = lists.first;
                 List<Chn> channels = lists.second;
+                List<Word> newKws = new ArrayList<>();
+                if (words != null) {
+                    for (String wd : words) {
+                        boolean matchFound = false;
+                        for (Word kw : keywords) {
+                            if (kw.getWord().equals(wd)) {
+                                newKws.add(kw);
+                                matchFound = true;
+                                break;
+                            }
+                        }
+                        if (!matchFound) {
+                            Word newWd = new Word(0, wd, ContextCompat.getColor(ctx, R.color.cloud), 0, false);
+                            newKws.add(newWd);
+                            Log.d("Word", newWd.getWord());
+                        }
+                    }
+                }
+
                 if (channels != null) {
                     progress(channels.size());
                     Toast.makeText(ctx, String.valueOf(channels.size()), Toast.LENGTH_SHORT).show();
@@ -111,6 +130,7 @@ public class GetArt {
                         int progress = 0;
                         for (Chn chn : channels) {
                             String link = chn.link;
+                            Log.d("Channel", link);
                             final int currentProgress = ++progress;
                             handler.post(() -> {
                                 String[] parts = link.split("/");
@@ -121,12 +141,14 @@ public class GetArt {
                                     bnd.progressText.setText(text);
                                 }
                             });
-                            articles.addAll(gettingArticles(link, hours, keywords));
+                            if (words == null) {
+                                articles.addAll(gettingArticles(link, hours, keywords));
+                            } else {
+                                articles.addAll(gettingArticles(link, hours, newKws));
+                            }
                         }
                         if (articles.isEmpty()) {
-                            handler.post(() -> {
-                                Toast.makeText(ctx, "Nothing has been found", Toast.LENGTH_LONG).show();
-                            });
+                            handler.post(() -> Toast.makeText(ctx, "Nothing has been found", Toast.LENGTH_LONG).show());
                         } else {
                             List<Article> finalList;
                             if (keywords.size() == 1) {
@@ -136,7 +158,14 @@ public class GetArt {
                             }
                             handler.post(() -> {
                                 wordVm.setArticles(finalList);
-                                wordVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx)));
+                                if (words == null) {
+                                    wordVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx)));
+                                } else {
+                                    for (Word kw : newKws) {
+                                        Log.i("New Kw", kw.getWord());
+                                    }
+                                    wordVm.setWords(sortingNum(new Count().results(newKws, finalList, ctx)));
+                                }
                                 dialog.dismiss();
                             });
                         }
@@ -211,7 +240,8 @@ public class GetArt {
             doc = fetchDoc(link);
 
             if (doc.text().contains("you can contact")) {
-                Toast.makeText(ctx, link, Toast.LENGTH_LONG).show();
+                Toast.makeText(ctx, "NOT ACTIVE : " + link, Toast.LENGTH_LONG).show();
+                return articles;
             }
 
             Elements messageSections = doc.select("div." + MESSAGE_DIV);

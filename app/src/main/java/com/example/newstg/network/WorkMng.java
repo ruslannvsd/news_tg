@@ -29,10 +29,19 @@ public class WorkMng extends Worker {
     @Override
     public Result doWork() {
         ctx = getApplicationContext();
+
+        String text = "Check News Now";
+        notification(text);
+
+        return Result.success();
+    }
+
+    @SuppressLint("MissingPermission")
+    private void notification(String text) {
         Intent intent = new Intent(ctx, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-        String text = "Check News Now";
+
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(ctx);
         NotificationChannel channel = new NotificationChannel(TG_NEWS_ID, "Tg News", NotificationManager.IMPORTANCE_HIGH);
         channel.setDescription("Tg News Desc");
@@ -46,6 +55,5 @@ public class WorkMng extends Worker {
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
         notificationManager.notify(TG_NTF_ID, builder.build());
-        return Result.success();
     }
 }

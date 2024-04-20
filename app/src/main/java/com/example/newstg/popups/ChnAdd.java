@@ -12,14 +12,12 @@ import android.widget.Toast;
 
 import androidx.core.widget.PopupWindowCompat;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 
 import com.example.newstg.R;
 import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.ChnAddBinding;
 import com.example.newstg.obj.Chn;
-import com.example.newstg.obj.Word;
 import com.example.newstg.utils.CloseKB;
 
 import java.util.HashSet;
@@ -69,23 +67,23 @@ public class ChnAdd {
                         StringBuilder added = new StringBuilder();
                         StringBuilder existed = new StringBuilder();
                         for (String input : inputText.split("\\s+")) {
-                            String chn = modifyLink(input);
+                            String chn = modifyLink(input.trim());
                             if (!existingSet.contains(chn)) {
                                 existingSet.add(chn);
-                                Chn newChn = new Chn(0, input);
+                                Chn newChn = new Chn(0, chn);
                                 newsVM.insChn(newChn);
-                                added.append(" ").append(input);
+                                added.append(" ").append(chn);
                             } else {
-                                existed.append(" ").append(input);
-                            }
-                            if (added.length() > 0) {
-                                Toast.makeText(ctx, "ADDED: " + added.toString().trim(), Toast.LENGTH_SHORT).show();
-                            }
-                            if (existed.length() > 0) {
-                                Toast.makeText(ctx, "EXIST: " + existed.toString().trim(), Toast.LENGTH_SHORT).show();
+                                existed.append(" ").append(chn);
                             }
                             bnd.chn.setText("");
                             newsVM.getChannels().removeObserver(this);
+                        }
+                        if (added.length() > 0) {
+                            Toast.makeText(ctx, "ADDED: " + added.toString().trim(), Toast.LENGTH_SHORT).show();
+                        }
+                        if (existed.length() > 0) {
+                            Toast.makeText(ctx, "EXIST: " + existed.toString().trim(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 };

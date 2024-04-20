@@ -32,6 +32,13 @@
                 android:orientation="vertical"
                 app:layout_constraintGuide_percent="0.20"/>
 
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline60"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.60"/>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/words"
                 android:layout_width="match_parent"
@@ -89,6 +96,18 @@
                 android:text=">"
                 android:focusable="true"
                 app:layout_constraintStart_toEndOf="@id/guideline20"
+                app:layout_constraintEnd_toStartOf="@id/guideline60"
+                app:layout_constraintTop_toTopOf="@id/period"
+                app:layout_constraintBottom_toBottomOf="@id/period" />
+
+            <Button
+                android:id="@+id/from_field"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:backgroundTint="#005745"
+                android:text="*"
+                android:focusable="true"
+                app:layout_constraintStart_toEndOf="@id/guideline60"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/period"
                 app:layout_constraintBottom_toBottomOf="@id/period" />

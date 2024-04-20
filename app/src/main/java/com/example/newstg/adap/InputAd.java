@@ -7,12 +7,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.newstg.R;
+import com.example.newstg.consts.ColorCons;
 import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.WordsBinding;
 import com.example.newstg.obj.Word;
@@ -26,6 +29,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
     List<Word> words = emptyList();
     Context ctx;
     NewsVM wordVm;
+    EditText inputField;
 
     @NonNull
     @Override
@@ -47,6 +51,16 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
         }
 
         h.itemView.setOnClickListener(v -> showPopupMenu(v, word, p));
+        h.itemView.setOnLongClickListener(v -> {
+            String field = inputField.getText().toString();
+            if (field.isEmpty()) {
+                inputField.setText(word.getWord());
+            } else {
+                String text = field + " " + word.getWord();
+                inputField.setText(text);
+            }
+            return true;
+        });
     }
 
     @Override
@@ -66,21 +80,21 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
         popupMenu.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.sky) {
-                wordUpd(wd, ctx.getColor(R.color.sky), p);
+                wordUpd(wd, ColorCons.sky(ctx), p);
             } else if (id == R.id.leaf) {
-                wordUpd(wd, ctx.getColor(R.color.leaf), p);
+                wordUpd(wd, ColorCons.leaf(ctx), p);
             } else if (id == R.id.sun) {
-                wordUpd(wd, ctx.getColor(R.color.sun), p);
+                wordUpd(wd, ColorCons.sun(ctx), p);
             } else if (id == R.id.fox) {
-                wordUpd(wd, ctx.getColor(R.color.fox), p);
+                wordUpd(wd, ColorCons.fox(ctx), p);
             } else if (id == R.id.evening) {
-                wordUpd(wd, ctx.getColor(R.color.evening), p);
+                wordUpd(wd, ColorCons.evening(ctx), p);
             } else if (id == R.id.flower) {
-                wordUpd(wd, ctx.getColor(R.color.flower), p);
+                wordUpd(wd, ColorCons.flower(ctx), p);
             } else if (id == R.id.water) {
-                wordUpd(wd, ctx.getColor(R.color.water), p);
+                wordUpd(wd, ColorCons.water(ctx), p);
             } else if (id == R.id.cloud) {
-                wordUpd(wd, ctx.getColor(R.color.cloud), p);
+                wordUpd(wd, ColorCons.cloud(ctx), p);
             } else if (id == R.id.on_off) {
                 wordVm.updWd(new Word(wd.getId(), wd.getWord(), wd.getColor(), wd.getNum(), !wd.getStatus()));
                 notifyItemChanged(p);
@@ -94,13 +108,14 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void setWords(List<Word> words, Context ctx, NewsVM wordVm) {
+    public void setWords(List<Word> words, Context ctx, NewsVM wordVm, EditText inputField) {
         if (words != null) {
             words.sort(sorting());
         }
         this.words = words;
         this.ctx = ctx;
         this.wordVm = wordVm;
+        this.inputField = inputField;
         notifyDataSetChanged();
     }
     private Comparator<Word> sorting() {

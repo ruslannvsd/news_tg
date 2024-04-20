@@ -72,7 +72,6 @@ public class InputPopup {
         setupPopupWindow(popupView);
         wordsToRv();
         color = ctx.getColor(R.color.cloud);
-
         bnd.enterWords.setOnKeyListener(this::wordsClick);
         bnd.period.setText("12");
         bnd.color.setBackgroundColor(color);
@@ -88,7 +87,6 @@ public class InputPopup {
                 }
             }
             new CloseKB().closeKeyboard(v);
-            window.dismiss();
             Log.d("InputPopup", "Start button clicked");
             Toast.makeText(ctx, hours + " hour(s). Search started ...", Toast.LENGTH_SHORT).show();
             new GetArt().getArt(
@@ -99,11 +97,45 @@ public class InputPopup {
                     artRv,
                     artAd,
                     sumRv,
-                    sumAd,
                     newsVM,
-                    unique
+                    unique,
+                    null
             );
             bnd.start.clearFocus();
+            window.dismiss();
+        });
+        bnd.fromField.setOnClickListener(v -> {
+            if (bnd.enterWords.getText().toString().isEmpty()) {
+                Toast.makeText(ctx, "No words in the field", Toast.LENGTH_SHORT).show();
+            } else {
+                String[] words = bnd.enterWords.getText().toString().trim().split(" ");
+                int hours;
+                if (bnd.period.getText().toString().isEmpty()) {
+                    hours = 100;
+                } else {
+                    hours = Integer.parseInt(bnd.period.getText().toString());
+                    if (hours > 100 || hours < 1) {
+                        hours = 100;
+                    }
+                }
+                new CloseKB().closeKeyboard(v);
+                Toast.makeText(ctx, hours + " hour(s). Search started ...", Toast.LENGTH_SHORT).show();
+
+                new GetArt().getArt(
+                        ctx,
+                        owner,
+                        hours,
+                        window,
+                        artRv,
+                        artAd,
+                        sumRv,
+                        newsVM,
+                        unique,
+                        words
+                );
+                bnd.start.clearFocus();
+                window.dismiss();
+            }
         });
     }
 
@@ -122,7 +154,8 @@ public class InputPopup {
             bnd.words.setLayoutManager(layoutManager);
             wordsAd.setWords(
                     words,
-                    ctx, newsVM);
+                    ctx, newsVM,
+                    bnd.enterWords);
             bnd.words.setAdapter(wordsAd);
         });
     }

@@ -69,6 +69,16 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         if (TextUtils.isEmpty(unique.getText())) {
             unique.setVisibility(View.GONE);
         }
+        /*List<Integer> colors = Arrays.asList(
+                ColorCons.sky(requireContext()),
+                ColorCons.leaf(requireContext()),
+                ColorCons.sun(requireContext()),
+                ColorCons.fox(requireContext()),
+                ColorCons.evening(requireContext()),
+                ColorCons.flower(requireContext()),
+                ColorCons.water(requireContext()),
+                ColorCons.cloud(requireContext())
+        );*/
         owner = getViewLifecycleOwner();
         artRv = bnd.articleRv;
         artAd = new ArtAd();
@@ -148,6 +158,12 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
     }
 
     private void schedulePeriodicWork() {
+        /*String url = "https://t.me/s/ukraine100news";
+
+        newsVM.delChn(url);
+        Toast.makeText(requireContext(), url, Toast.LENGTH_LONG).show();*/
+
+
         int hours = 6;
         Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
         PeriodicWorkRequest newRequest = new PeriodicWorkRequest.Builder(WorkMng.class, hours, TimeUnit.HOURS)
