@@ -66,10 +66,10 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         super.onViewCreated(view, savedInstanceState);
         newsVM = new ViewModelProvider(this).get(NewsVM.class);
         unique = bnd.unique;
-        if (TextUtils.isEmpty(unique.getText())) {
+        /*if (TextUtils.isEmpty(unique.getText())) {
             unique.setVisibility(View.GONE);
         }
-        /*List<Integer> colors = Arrays.asList(
+        List<Integer> colors = Arrays.asList(
                 ColorCons.sky(requireContext()),
                 ColorCons.leaf(requireContext()),
                 ColorCons.sun(requireContext()),
@@ -102,7 +102,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
                 )
         );
         newsVM.getArticles().observe(getViewLifecycleOwner(), articles -> {
-            artAd.setArticles(articles, requireContext());
+            artAd.setArticles(articles, requireContext(), null);
             rvSetting(artRv, artAd, requireContext(), false);
         });
         newsVM.getResults().observe(getViewLifecycleOwner(), results -> {
@@ -133,7 +133,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
                 }
                 uniqueKeywords(customArt);
             }
-            artAd.setArticles(customArt, requireContext());
+            artAd.setArticles(customArt, requireContext(), keyword.getWord());
             artAd.notifyDataSetChanged();
         });
 
@@ -178,7 +178,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
     }
     public void uniqueKeywords(List<Article> articles) {
         if (articles.isEmpty()) {
-            unique.setVisibility(View.GONE);
+            // unique.setVisibility(View.GONE);
             unique.setText(null);
             return;
         }
@@ -186,7 +186,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         for (Article article : articles) {
             uniqueKeywordsSet.addAll(article.keywords);
         }
-        unique.setVisibility(View.VISIBLE);
+        //unique.setVisibility(View.VISIBLE);
         unique.setText(String.join(" | ", new ArrayList<>(uniqueKeywordsSet)));
     }
 

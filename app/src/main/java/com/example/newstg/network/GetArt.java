@@ -302,7 +302,7 @@ public class GetArt {
                     dialog.dismiss();
                 }
             });
-            unique.setVisibility(View.VISIBLE);
+            // unique.setVisibility(View.VISIBLE);
             unique.setText(errorText);
             Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
             throw new RuntimeException(e);

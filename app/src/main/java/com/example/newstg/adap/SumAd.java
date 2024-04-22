@@ -54,7 +54,7 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
             pressed = h.getAdapterPosition();
             notifyItemChanged(pressed);
             if (onKeywordClick != null) {
-                onKeywordClick.onKeywordClick(keywords.get(p));
+                onKeywordClick.onKeywordClick(wd);
             }
         });
 

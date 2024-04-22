@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
     List<Article> articles = emptyList();
     Context ctx;
+    String chosen;
     @NonNull
     public ArticleViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent, int viewType) {
@@ -62,7 +63,7 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
             Glide.with(ctx).load(R.drawable.line).placeholder(R.drawable.load).into(h.bnd.divider);
             h.bnd.img.setVisibility(View.GONE);
         }
-        SpannableStringBuilder textWithBold = boldWords(art.body, art.keywords);
+        SpannableStringBuilder textWithBold = boldWords(art.body, art.keywords, chosen);
         h.bnd.artBody.setText(textWithBold);
     }
 
@@ -78,9 +79,10 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         }
     }
     @SuppressLint("NotifyDataSetChanged")
-    public void setArticles(List<Article> articles, Context ctx) {
+    public void setArticles(List<Article> articles, Context ctx, String keyword) {
         this.articles = articles;
         this.ctx = ctx;
+        this.chosen = keyword;
         notifyDataSetChanged();
     }
 
@@ -104,35 +106,50 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         }
     }
     @NonNull
-    private static SpannableStringBuilder boldWords(String fullText, @NonNull List<String> wordsToBold) {
+    private static SpannableStringBuilder boldWords(String fullText, @NonNull List<String> wordsToBold, String chosen) {
         SpannableStringBuilder sb = new SpannableStringBuilder(fullText);
         String lowerFullText = fullText.toLowerCase(Locale.ROOT);
         for (String item : wordsToBold) {
             if (item.contains("_")) {
                 String[] splitWords = item.split("_");
                 for (String wordToBold : splitWords) {
-                    italicizeWord(sb, lowerFullText, wordToBold);
+                    colorizing(sb, lowerFullText, wordToBold, chosen);
                 }
             } else {
-                italicizeWord(sb, lowerFullText, item);
+                colorizing(sb, lowerFullText, item, chosen);
             }
         }
-
         return sb;
     }
 
-    private static void italicizeWord(SpannableStringBuilder sb, String lowerFullText, String wordToBold) {
-        int startSpan = 0;
-        while (startSpan != -1) {
-            startSpan = lowerFullText.indexOf(wordToBold, startSpan);
-            if (startSpan != -1) {
-                int endSpan = startSpan + wordToBold.length();
-                sb.setSpan(new StyleSpan(Typeface.BOLD), startSpan, endSpan, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                sb.setSpan(new ForegroundColorSpan(Color.YELLOW), startSpan, endSpan, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                startSpan = endSpan;
+    private static void colorizing(SpannableStringBuilder sb, String lowerFullText, String wordToYellow, String wordToGreen) {
+        int startSpanYellow = 0;
+        while (startSpanYellow != -1) {
+            startSpanYellow = lowerFullText.indexOf(wordToYellow, startSpanYellow);
+            if (startSpanYellow != -1) {
+                int endSpanYellow = startSpanYellow + wordToYellow.length();
+                sb.setSpan(new StyleSpan(Typeface.BOLD), startSpanYellow, endSpanYellow, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                sb.setSpan(new ForegroundColorSpan(Color.YELLOW), startSpanYellow, endSpanYellow, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                startSpanYellow = endSpanYellow;
+            }
+        }
+        if (wordToGreen != null) {
+            String[] parts = wordToGreen.split("_");
+            for (String part : parts) {
+                int startSpanGreen = 0;
+                while (startSpanGreen != -1) {
+                    startSpanGreen = lowerFullText.indexOf(part, startSpanGreen);
+                    if (startSpanGreen != -1) {
+                        int endSpanGreen = startSpanGreen + part.length();
+                        sb.setSpan(new StyleSpan(Typeface.BOLD), startSpanGreen, endSpanGreen, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        sb.setSpan(new ForegroundColorSpan(Color.GREEN), startSpanGreen, endSpanGreen, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        startSpanGreen = endSpanGreen;
+                    }
+                }
             }
         }
     }
+
     private void linkify(String title, String url, TextView tv) {
         String formattedText = "<a href='" + url + "'>" + title + "</a>";
         tv.setText(Html.fromHtml(formattedText, Html.FROM_HTML_MODE_COMPACT));

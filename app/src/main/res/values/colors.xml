@@ -33,4 +33,20 @@
     <color name="water">#8091FF</color>
     <color name="cloud">#9A9A9A</color>
 
+    <color name="sunset_glow">#ff6666</color>
+    <color name="harvest_moon">#d39454</color>
+    <color name="morning_sun">#a4a441</color>
+    <color name="spring_dew">#7baf46</color>
+    <color name="forest_mist">#4bbd4b</color>
+    <color name="gentle_tide">#49b881</color>
+    <color name="clear_sky">#48b3b3</color>
+    <color name="winter_morning">#5fa7ee</color>
+    <color name="twilight_blue">#6666ff</color>
+    <color name="dusk_lavender">#b266ff</color>
+    <color name="aurora_pink">#ff66ff</color>
+    <color name="cherry_blossom">#ff66b2</color>
+    <color name="ctg_fog">#d9d9d9</color>
+
+
+
 </resources>

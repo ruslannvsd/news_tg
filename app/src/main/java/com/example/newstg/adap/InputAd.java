@@ -19,6 +19,7 @@ import com.example.newstg.consts.ColorCons;
 import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.WordsBinding;
 import com.example.newstg.obj.Word;
+import com.example.newstg.popups.ColorPopup;
 
 import java.text.Collator;
 import java.util.Comparator;
@@ -28,7 +29,7 @@ import java.util.Locale;
 public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
     List<Word> words = emptyList();
     Context ctx;
-    NewsVM wordVm;
+    NewsVM newsVM;
     EditText inputField;
 
     @NonNull
@@ -50,7 +51,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
             h.bnd.card.setCardBackgroundColor(ctx.getColor(R.color.black));
         }
 
-        h.itemView.setOnClickListener(v -> showPopupMenu(v, word, p));
+        h.itemView.setOnClickListener(v -> new ColorPopup().colorPopup(ctx, newsVM, p, this, word));
         h.itemView.setOnLongClickListener(v -> {
             String field = inputField.getText().toString();
             if (field.isEmpty()) {
@@ -74,7 +75,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
             this.bnd = bnd;
         }
     }
-    private void showPopupMenu(View view, Word wd, int p) {
+    /*private void showPopupMenu(View view, Word wd, int p) {
         PopupMenu popupMenu = new PopupMenu(ctx, view);
         popupMenu.inflate(R.menu.item_menu);
         popupMenu.setOnMenuItemClickListener(item -> {
@@ -105,7 +106,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
             return true;
         });
         popupMenu.show();
-    }
+    }*/
 
     @SuppressLint("NotifyDataSetChanged")
     public void setWords(List<Word> words, Context ctx, NewsVM wordVm, EditText inputField) {
@@ -114,7 +115,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
         }
         this.words = words;
         this.ctx = ctx;
-        this.wordVm = wordVm;
+        this.newsVM = wordVm;
         this.inputField = inputField;
         notifyDataSetChanged();
     }
@@ -127,10 +128,5 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
                                         .thenComparing(Collator.getInstance(Locale.ENGLISH))
                         )
                 );
-    }
-    private void wordUpd(Word wd, int color, int p) {
-        Word updated =  new Word(wd.getId(), wd.getWord(), color, wd.getNum(), wd.getStatus());
-        wordVm.updWd(updated);
-        notifyItemChanged(p);
     }
 }
