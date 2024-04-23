@@ -34,19 +34,18 @@
     <color name="cloud">#9A9A9A</color>
 
     <color name="sunset_glow">#ff6666</color>
-    <color name="harvest_moon">#d39454</color>
-    <color name="morning_sun">#a4a441</color>
-    <color name="spring_dew">#7baf46</color>
-    <color name="forest_mist">#4bbd4b</color>
-    <color name="gentle_tide">#49b881</color>
-    <color name="clear_sky">#48b3b3</color>
-    <color name="winter_morning">#5fa7ee</color>
-    <color name="twilight_blue">#6666ff</color>
-    <color name="dusk_lavender">#b266ff</color>
-    <color name="aurora_pink">#ff66ff</color>
-    <color name="cherry_blossom">#ff66b2</color>
-    <color name="ctg_fog">#d9d9d9</color>
+    <color name="harvest_moon">#d59055</color>
+    <color name="morning_sun">#9fa53f</color>
+    <color name="spring_dew">#64b54a</color>
+    <color name="forest_mist">#29c74c</color>
+    <color name="gentle_tide">#48b87f</color>
+    <color name="clear_sky">#48b2bc</color>
+    <color name="winter_morning">#61a5f2</color>
+    <color name="twilight_blue">#6568fe</color>
+    <color name="dusk_lavender">#a266fe</color>
+    <color name="aurora_pink">#df66fe</color>
+    <color name="cherry_blossom">#f666c5</color>
 
-
+    <color name="fog">#2B2B2B</color>
 
 </resources>

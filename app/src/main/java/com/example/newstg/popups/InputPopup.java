@@ -7,8 +7,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,6 +20,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.newstg.R;
+import com.example.newstg.adap.ColorPickerAd;
 import com.example.newstg.adap.InputAd;
 import com.example.newstg.adap.ArtAd;
 import com.example.newstg.adap.SumAd;
@@ -28,13 +29,12 @@ import com.example.newstg.databinding.InputPopupBinding;
 import com.example.newstg.network.GetArt;
 import com.example.newstg.obj.Word;
 import com.example.newstg.utils.CloseKB;
+import com.example.newstg.utils.ColorPickerCallback;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 public class InputPopup {
     InputPopupBinding bnd;
@@ -68,14 +68,20 @@ public class InputPopup {
 
         View popupView = LayoutInflater.from(ctx).inflate(R.layout.input_popup, new LinearLayout(ctx), false);
         bnd = InputPopupBinding.bind(popupView);
+        Button colorBtn = bnd.color;
         wordsAd = new InputAd();
         setupPopupWindow(popupView);
         wordsToRv();
-        color = ctx.getColor(R.color.cloud);
+        color = ctx.getColor(R.color.white);
         bnd.enterWords.setOnKeyListener(this::wordsClick);
         bnd.period.setText("12");
-        bnd.color.setBackgroundColor(color);
-        bnd.color.setOnClickListener(this::showPopupMenu);
+        colorBtn.setBackgroundColor(color);
+        colorBtn.setOnClickListener(v ->
+                        new ColorPicker().colorPopup(ctx, colorBtn, chosenColor -> {
+                            color = chosenColor;
+                            colorBtn.setBackgroundColor(color);
+                        })
+                );
         bnd.start.setOnClickListener(v -> {
             int hours;
             if (bnd.period.getText().toString().isEmpty()) {
@@ -204,29 +210,5 @@ public class InputPopup {
             return true;
         }
         return false;
-    }
-
-    private void showPopupMenu(View view) {
-        PopupMenu popupMenu = new PopupMenu(ctx, view);
-        popupMenu.inflate(R.menu.color_menu);
-        Map<Integer, Integer> colorMap = new HashMap<>();
-        colorMap.put(R.id.sky, R.color.sky);
-        colorMap.put(R.id.leaf, R.color.leaf);
-        colorMap.put(R.id.sun, R.color.sun);
-        colorMap.put(R.id.fox, R.color.fox);
-        colorMap.put(R.id.evening, R.color.evening);
-        colorMap.put(R.id.flower, R.color.flower);
-        colorMap.put(R.id.water, R.color.water);
-        colorMap.put(R.id.cloud, R.color.cloud);
-        popupMenu.setOnMenuItemClickListener(item -> {
-            Integer colorResource = colorMap.get(item.getItemId());
-            if (colorResource != null) {
-                color = ctx.getColor(colorResource);
-                bnd.color.setBackgroundColor(color);
-                return true;
-            }
-            return false;
-        });
-        popupMenu.show();
     }
 }
