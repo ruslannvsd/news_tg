@@ -15,11 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.newstg.R;
 import com.example.newstg.adap.ColorPickerAd;
-import com.example.newstg.adap.ColorUpdAd;
-import com.example.newstg.adap.InputAd;
-import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.ColorMenuBinding;
-import com.example.newstg.obj.Word;
 import com.example.newstg.utils.ColorPickerCallback;
 
 public class ColorPicker {

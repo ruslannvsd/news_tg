@@ -31,4 +31,8 @@ public interface WordDao {
 
     @Query("select * from keywords where status = 1")
     LiveData<List<Word>> getTrue();
+
+    // for offline
+    @Query("select * from keywords where status = 1")
+    List<Word> offlineKw();
 }

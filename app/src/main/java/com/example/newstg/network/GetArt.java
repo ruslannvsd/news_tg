@@ -7,8 +7,10 @@ import static com.example.newstg.consts.Cons.JS_TEXT;
 import static com.example.newstg.consts.Cons.MESSAGE_DIV;
 import static com.example.newstg.consts.Cons.MESS_REPLY;
 import static com.example.newstg.consts.Cons.TEXT_DIV;
-
-import static java.lang.String.join;
+import static com.example.newstg.network.FetchUtils.merging;
+import static com.example.newstg.network.FetchUtils.replaceBR;
+import static com.example.newstg.network.FetchUtils.sorting;
+import static com.example.newstg.network.FetchUtils.sortingNum;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -16,12 +18,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
@@ -49,16 +49,12 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class GetArt {
     Context ctx;
@@ -67,7 +63,7 @@ public class GetArt {
     RecyclerView artRv;
     ArtAd artAd;
     RecyclerView sumRv;
-    NewsVM wordVm;
+    NewsVM newsVm;
     TextView unique;
 
     ProgressBinding bnd;
@@ -82,7 +78,7 @@ public class GetArt {
             RecyclerView artRv,
             ArtAd artAd,
             RecyclerView sumRv,
-            NewsVM wordVm,
+            NewsVM newsVm,
             TextView unique,
             @Nullable String[] words
     ) {
@@ -90,7 +86,7 @@ public class GetArt {
         this.window = window;
         this.artRv = artRv;
         this.artAd = artAd;
-        this.wordVm = wordVm;
+        this.newsVm = newsVm;
         this.sumRv = sumRv;
         this.unique = unique;
         this.owner = owner;
@@ -157,14 +153,16 @@ public class GetArt {
                                 finalList = merging(articles);
                             }
                             handler.post(() -> {
-                                wordVm.setArticles(finalList);
+                                newsVm.clearArticles();
+                                newsVm.setArticles(finalList);
+
                                 if (words == null) {
-                                    wordVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx)));
+                                    newsVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx)));
                                 } else {
                                     for (Word kw : newKws) {
                                         Log.i("New Kw", kw.getWord());
                                     }
-                                    wordVm.setWords(sortingNum(new Count().results(newKws, finalList, ctx)));
+                                    newsVm.setWords(sortingNum(new Count().results(newKws, finalList, ctx)));
                                 }
                                 dialog.dismiss();
                             });
@@ -179,43 +177,11 @@ public class GetArt {
                     };
                     executorService.submit(task);
                     window.dismiss();
-                    wordVm.lists().removeObserver(this);
+                    newsVm.lists().removeObserver(this);
                 }
             }
         };
-        wordVm.lists().observe(owner, observer);
-    }
-
-    @NonNull
-    public static String replaceBR(@NonNull Element element) {
-        String[] articleBodyStr = element.html().split("<br>");
-        return Jsoup.parse(join("$$$$$", articleBodyStr)).text().replace("$$$$$", "\n");
-    }
-
-    public List<Article> sorting(@NonNull List<Article> artList) {
-        return artList.stream().sorted(Comparator.comparingLong(article -> -article.time))
-                .collect(Collectors.toList());
-    }
-
-    public List<Article> merging(@NonNull List<Article> articles) {
-        List<Article> merged = new ArrayList<>(articles.stream()
-                .collect(Collectors.toMap(
-                        article -> article.link,
-                        Function.identity(),
-                        (article1, article2) -> {
-                            article1.keywords.addAll(article2.keywords);
-                            article1.keywords = new ArrayList<>(new HashSet<>(article1.keywords));
-                            return article1;
-                        }))
-                .values());
-        return sorting(merged);
-    }
-
-    public List<Word> sortingNum(List<Word> words) {
-        return words.stream()
-                .filter(word -> word.getNum() != 0)
-                .sorted(Comparator.comparingInt(Word::getNum).reversed())
-                .collect(Collectors.toList());
+        newsVm.lists().observe(owner, observer);
     }
 
     public void progress(int size) {
@@ -230,7 +196,7 @@ public class GetArt {
     }
 
     private Document fetchDoc(String url) throws IOException {
-        return Jsoup.connect(url).timeout(20 * 1000).get(); // 20 seconds timeout
+        return Jsoup.connect(url).timeout(20 * 1000).get();
     }
 
     private List<Article> gettingArticles(String link, int hours, List<Word> keywords) {
@@ -238,7 +204,6 @@ public class GetArt {
         List<Article> articles = new ArrayList<>();
         try {
             doc = fetchDoc(link);
-
             if (doc.text().contains("you can contact")) {
                 Toast.makeText(ctx, "NOT ACTIVE : " + link, Toast.LENGTH_LONG).show();
                 return articles;
@@ -302,7 +267,6 @@ public class GetArt {
                     dialog.dismiss();
                 }
             });
-            // unique.setVisibility(View.VISIBLE);
             unique.setText(errorText);
             Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
             throw new RuntimeException(e);

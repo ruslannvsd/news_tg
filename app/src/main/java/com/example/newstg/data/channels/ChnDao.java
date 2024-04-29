@@ -27,4 +27,8 @@ public interface ChnDao {
 
     @Query("DELETE FROM channels WHERE link = :url")
     void deleteByUrl(String url);
+
+    // for offline
+    @Query("select * from channels")
+    List<Chn> offChannels();
 }

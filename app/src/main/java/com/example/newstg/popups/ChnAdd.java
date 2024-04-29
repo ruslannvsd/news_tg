@@ -64,26 +64,26 @@ public class ChnAdd {
                         for (Chn chn : channels) {
                             existingSet.add(chn.link);
                         }
-                        StringBuilder added = new StringBuilder();
-                        StringBuilder existed = new StringBuilder();
+                        int added = 0;
+                        int existed = 0;
                         for (String input : inputText.split("\\s+")) {
                             String chn = modifyLink(input.trim());
                             if (!existingSet.contains(chn)) {
                                 existingSet.add(chn);
                                 Chn newChn = new Chn(0, chn);
                                 newsVM.insChn(newChn);
-                                added.append(" ").append(chn);
+                                added += 1;
                             } else {
-                                existed.append(" ").append(chn);
+                                existed += 1;
                             }
                             bnd.chn.setText("");
                             newsVM.getChannels().removeObserver(this);
                         }
-                        if (added.length() > 0) {
-                            Toast.makeText(ctx, "ADDED: " + added.toString().trim(), Toast.LENGTH_SHORT).show();
+                        if (added > 0) {
+                            Toast.makeText(ctx, "ADDED: " + added + " channel(s)", Toast.LENGTH_SHORT).show();
                         }
-                        if (existed.length() > 0) {
-                            Toast.makeText(ctx, "EXIST: " + existed.toString().trim(), Toast.LENGTH_SHORT).show();
+                        if (existed > 0) {
+                            Toast.makeText(ctx, "EXIST: " + existed + " channel(s)", Toast.LENGTH_SHORT).show();
                         }
                     }
                 };

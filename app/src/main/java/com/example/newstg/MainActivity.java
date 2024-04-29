@@ -1,12 +1,12 @@
 package com.example.newstg;
 
+import static com.example.newstg.consts.Cons.TG_NEWS_ID;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
-    static String TG_NEWS_ID = "TG_NEWS_ID";
-
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);

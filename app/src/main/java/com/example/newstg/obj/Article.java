@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey;
 
 import java.util.List;
 
-@Entity
+@Entity(tableName = "articles")
 public class Article {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id") public int id;

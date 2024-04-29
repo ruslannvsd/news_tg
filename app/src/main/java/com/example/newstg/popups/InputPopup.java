@@ -83,6 +83,7 @@ public class InputPopup {
                         })
                 );
         bnd.start.setOnClickListener(v -> {
+            newsVM.clearArticles();
             int hours;
             if (bnd.period.getText().toString().isEmpty()) {
                 hours = 100;
@@ -111,6 +112,7 @@ public class InputPopup {
             window.dismiss();
         });
         bnd.fromField.setOnClickListener(v -> {
+            newsVM.clearArticles();
             if (bnd.enterWords.getText().toString().isEmpty()) {
                 Toast.makeText(ctx, "No words in the field", Toast.LENGTH_SHORT).show();
             } else {
@@ -158,7 +160,7 @@ public class InputPopup {
             FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(ctx);
             layoutManager.setJustifyContent(JustifyContent.FLEX_START);
             bnd.words.setLayoutManager(layoutManager);
-            wordsAd.setWords(
+            wordsAd.setKeywords(
                     words,
                     ctx, newsVM,
                     bnd.enterWords);

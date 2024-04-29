@@ -3,8 +3,10 @@ package com.example.newstg.data;
 import android.app.Application;
 import androidx.lifecycle.LiveData;
 
+import com.example.newstg.data.articles.ArtDao;
 import com.example.newstg.data.channels.ChnDao;
 import com.example.newstg.data.keywords.WordDao;
+import com.example.newstg.obj.Article;
 import com.example.newstg.obj.Chn;
 import com.example.newstg.obj.Word;
 import java.util.List;
@@ -12,11 +14,13 @@ import java.util.List;
 public class NewsRep {
     private final WordDao wordDao;
     private final ChnDao chnDao;
+    private final ArtDao artDao;
 
     public NewsRep(Application app) {
         NewsDB db = NewsDB.getDatabase(app);
         wordDao = db.wordDao();
         chnDao = db.chnDao();
+        artDao = db.artDao();
     }
 
     // keywords functions
@@ -33,4 +37,8 @@ public class NewsRep {
     public void delChn(Chn chn) { chnDao.delChn(chn); }
 
     public void delByUrl(String chn) { chnDao.deleteByUrl(chn); }
+
+    public LiveData<List<Article>> getOffArt() { return artDao.getArticles(); }
+    public void delOffArt() { artDao.deleteAll(); }
+
 }

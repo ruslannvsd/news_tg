@@ -3,6 +3,7 @@ package com.example.newstg.adap;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -17,6 +18,7 @@ import com.example.newstg.obj.Word;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ColorUpdAd extends RecyclerView.Adapter<ColorUpdAd.ColorViewHolder> {
     private static final int TYPE_COLOR = 0;
@@ -29,6 +31,7 @@ public class ColorUpdAd extends RecyclerView.Adapter<ColorUpdAd.ColorViewHolder>
     int pos;
     PopupWindow window;
     Word wd;
+    EditText wordEt;
     @NonNull
     @Override
     public ColorUpdAd.ColorViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -46,7 +49,8 @@ public class ColorUpdAd extends RecyclerView.Adapter<ColorUpdAd.ColorViewHolder>
             colorTV.setText(color.getName());
             colorTV.setTextColor(color.getColor());
             colorTV.setOnClickListener(v -> {
-                wordUpd(wd, color.getColor());
+                String wordTitle = wordEt.getText().toString().trim();
+                wordUpd(wordTitle, wd, color.getColor());
             });
         } else {
             String action = (String) item;
@@ -84,22 +88,29 @@ public class ColorUpdAd extends RecyclerView.Adapter<ColorUpdAd.ColorViewHolder>
         }
     }
 
-    public void getColors(Context ctx, NewsVM newsVM, InputAd inputAd, int pos, PopupWindow window, Word wd) {
+    public void getColors(Context ctx, NewsVM newsVM, InputAd inputAd, int pos, PopupWindow window, Word wd, EditText wordEt) {
         this.ctx = ctx;
         this.newsVM = newsVM;
         this.inputAd = inputAd;
         this.pos = pos;
         this.window = window;
         this.wd = wd;
+        this.wordEt = wordEt;
         List<Color> colors = ColorCons.getAllColors(ctx);
         items.addAll(colors);
         items.add("On/Off");
         items.add("Delete");
     }
-    private void wordUpd(Word wd, int color) {
-        Word updated =  new Word(wd.getId(), wd.getWord(), color, wd.getNum(), wd.getStatus());
+    private void wordUpd(String wordTitle, Word wd, int color) {
+        Word updated;
+        if (!Objects.equals(wordTitle, wd.getWord())) {
+            updated = new Word(wd.getId(), wordTitle, color, wd.getNum(), wd.getStatus());
+        } else {
+            updated = new Word(wd.getId(), wd.getWord(), color, wd.getNum(), wd.getStatus());
+        }
         newsVM.updWd(updated);
         inputAd.notifyItemChanged(pos);
         window.dismiss();
+
     }
 }

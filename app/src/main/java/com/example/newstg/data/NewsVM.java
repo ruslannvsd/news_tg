@@ -22,6 +22,8 @@ public class NewsVM extends AndroidViewModel {
     private final LiveData<List<Word>> words;
     private final LiveData<List<Word>> onlyTrue;
     private final LiveData<List<Chn>> channels;
+    private final LiveData<List<Article>> articles;
+
     private final MutableLiveData<List<Article>> articlesLD = new MutableLiveData<>();
     private final MutableLiveData<List<Word>> wordsLD = new MutableLiveData<>();
 
@@ -33,6 +35,7 @@ public class NewsVM extends AndroidViewModel {
         words = newsRep.getAll();
         onlyTrue = newsRep.getTrue();
         channels = newsRep.getChannels();
+        articles = newsRep.getOffArt();
 
         wordsAndChannels.addSource(onlyTrue, wordsList -> combine(wordsList, channels.getValue()));
         wordsAndChannels.addSource(channels, channelsList -> combine(onlyTrue.getValue(), channelsList));
@@ -85,5 +88,10 @@ public class NewsVM extends AndroidViewModel {
 
     public void delChn(String chn) {
         CompletableFuture.runAsync(() -> newsRep.delByUrl(chn), Executors.newSingleThreadExecutor());
+    }
+
+    public LiveData<List<Article>> offArticles() { return articles; }
+    public void clearArticles() {
+        CompletableFuture.runAsync(() -> newsRep.delOffArt(), Executors.newSingleThreadExecutor());
     }
 }

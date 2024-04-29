@@ -71,7 +71,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void setWords(List<Word> words, Context ctx, NewsVM wordVm, EditText inputField) {
+    public void setKeywords(List<Word> words, Context ctx, NewsVM wordVm, EditText inputField) {
         this.words = words;
         this.ctx = ctx;
         if (words != null) {

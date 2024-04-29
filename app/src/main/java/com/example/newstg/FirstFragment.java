@@ -1,9 +1,11 @@
 package com.example.newstg;
 
+import static com.example.newstg.network.FetchUtils.sortingNum;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,22 +18,18 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.work.Constraints;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
 
 import com.example.newstg.adap.ArtAd;
 import com.example.newstg.adap.SumAd;
 import com.example.newstg.consts.Cons;
 import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.FragmentFirstBinding;
-import com.example.newstg.network.WorkMng;
 import com.example.newstg.obj.Article;
 import com.example.newstg.obj.Word;
 import com.example.newstg.popups.ChnAdd;
 import com.example.newstg.popups.InputPopup;
+import com.example.newstg.utils.Count;
+import com.example.newstg.utils.Scheduler;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
@@ -39,10 +37,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
-
     private FragmentFirstBinding bnd;
     NewsVM newsVM;
     LifecycleOwner owner;
@@ -66,28 +62,36 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         super.onViewCreated(view, savedInstanceState);
         newsVM = new ViewModelProvider(this).get(NewsVM.class);
         unique = bnd.unique;
-        /*if (TextUtils.isEmpty(unique.getText())) {
-            unique.setVisibility(View.GONE);
-        }
-        List<Integer> colors = Arrays.asList(
-                ColorCons.sky(requireContext()),
-                ColorCons.leaf(requireContext()),
-                ColorCons.sun(requireContext()),
-                ColorCons.fox(requireContext()),
-                ColorCons.evening(requireContext()),
-                ColorCons.flower(requireContext()),
-                ColorCons.water(requireContext()),
-                ColorCons.cloud(requireContext())
-        );*/
         owner = getViewLifecycleOwner();
         artRv = bnd.articleRv;
         artAd = new ArtAd();
         sumRv = bnd.summaryRv;
         sumAd = new SumAd(this);
-        bnd.on.setOnClickListener(v -> schedulePeriodicWork());
-        bnd.off.setOnClickListener(v -> cancelPeriodicWork());
+
+        newsVM.offArticles().observe(owner, articles -> {
+            newsVM.clearArticles();
+            if (articles.size() != 0) {
+                Log.i("List size", Integer.toString(articles.size()));
+                newsVM.setArticles(articles);
+                newsVM.getAll().observe(owner, keywords -> {
+                    newsVM.setWords(sortingNum(new Count().results(keywords, articles, requireContext())));
+                });
+            }
+        });
+
+
+        bnd.on.setOnClickListener(v -> new Scheduler().setupWorkSchedules(requireContext(), 22, 24));
+        bnd.off.setOnClickListener(v -> {
+            Scheduler scheduler = new Scheduler();
+            scheduler.cancelPeriodicWork(Scheduler.HOURS_24);
+            scheduler.cancelPeriodicWork(Scheduler.HOURS_4);
+            Toast.makeText(requireContext(), "Notification cancelled", Toast.LENGTH_SHORT).show();
+        });
+
         bnd.channel.setOnClickListener(v -> {
             new ChnAdd().chlAdd(requireContext(), newsVM, owner);
+            // newsVM.delChn("https://t.me/s/ukraine100news");
+            // Log.i("Deleted", "Deleted");
         });
         bnd.makeChg.setOnClickListener(v ->
                 new InputPopup().inputPopup(
@@ -136,7 +140,6 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
             artAd.setArticles(customArt, requireContext(), keyword.getWord());
             artAd.notifyDataSetChanged();
         });
-
     }
 
     private void rvSetting(
@@ -157,28 +160,8 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         rv.setAdapter(ad);
     }
 
-    private void schedulePeriodicWork() {
-        /*String url = "https://t.me/s/ukraine100news";
-
-        newsVM.delChn(url);
-        Toast.makeText(requireContext(), url, Toast.LENGTH_LONG).show();*/
-
-
-        int hours = 6;
-        Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
-        PeriodicWorkRequest newRequest = new PeriodicWorkRequest.Builder(WorkMng.class, hours, TimeUnit.HOURS)
-                .setConstraints(constraints).build();
-        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork("PeriodicWork", ExistingPeriodicWorkPolicy.KEEP, newRequest);
-        Toast.makeText(requireContext(), "Notifications Set", Toast.LENGTH_SHORT).show();
-    }
-    private void cancelPeriodicWork() {
-        WorkManager.getInstance(requireContext()).cancelUniqueWork("PeriodicWork");
-        Toast.makeText(requireContext(), "Notifications Cancelled", Toast.LENGTH_SHORT).show();
-        // newsVM.delChn();
-    }
     public void uniqueKeywords(List<Article> articles) {
         if (articles.isEmpty()) {
-            // unique.setVisibility(View.GONE);
             unique.setText(null);
             return;
         }
@@ -186,8 +169,6 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         for (Article article : articles) {
             uniqueKeywordsSet.addAll(article.keywords);
         }
-        //unique.setVisibility(View.VISIBLE);
         unique.setText(String.join(" | ", new ArrayList<>(uniqueKeywordsSet)));
     }
-
 }
