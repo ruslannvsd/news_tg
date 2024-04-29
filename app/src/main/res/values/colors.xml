@@ -24,15 +24,6 @@
     <color name="yellow">#ECFF3C</color>
     <color name="gray">#323232</color>
 
-    <color name="sky">#7EE3FF</color>
-    <color name="leaf">#7EFF82</color>
-    <color name="sun">#FBDD7D</color>
-    <color name="fox">#FF9E80</color>
-    <color name="evening">#FD7C86</color>
-    <color name="flower">#B37EFF</color>
-    <color name="water">#8091FF</color>
-    <color name="cloud">#9A9A9A</color>
-
     <color name="sunset_glow">#ff6666</color>
     <color name="harvest_moon">#d59055</color>
     <color name="morning_sun">#9fa53f</color>
@@ -47,5 +38,11 @@
     <color name="cherry_blossom">#f666c5</color>
 
     <color name="fog">#2B2B2B</color>
+    <color name="f_22">#222222</color>
 
+    <color name="chn_1">#006600</color>
+    <color name="chn_2">#405a00</color>
+    <color name="chn_3">#5e4b00</color>
+    <color name="chn_4">#773400</color>
+    <color name="chn_5">#8a0000</color>
 </resources>

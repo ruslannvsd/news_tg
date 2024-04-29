@@ -111,7 +111,7 @@ public class GetArt {
                             }
                         }
                         if (!matchFound) {
-                            Word newWd = new Word(0, wd, ContextCompat.getColor(ctx, R.color.cloud), 0, false);
+                            Word newWd = new Word(0, wd, ContextCompat.getColor(ctx, R.color.white), 0, false);
                             newKws.add(newWd);
                             Log.d("Word", newWd.getWord());
                         }
