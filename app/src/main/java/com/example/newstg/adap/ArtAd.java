@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
     List<Article> articles = emptyList();
@@ -47,6 +49,7 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         Article art = articles.get(p);
         int color = cardBgColor(art.time, ctx);
         h.bnd.card.setBackgroundColor(color);
+        h.bnd.channel.setBackgroundColor(art.color);
         long currentTimeMillis = System.currentTimeMillis();
         long differenceMillis = currentTimeMillis - art.time;
         long hours = TimeUnit.MILLISECONDS.toHours(differenceMillis);
@@ -122,29 +125,25 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         return sb;
     }
 
-    private static void colorizing(SpannableStringBuilder sb, String lowerFullText, String wordToYellow, String wordToGreen) {
-        int startSpanYellow = 0;
-        while (startSpanYellow != -1) {
-            startSpanYellow = lowerFullText.indexOf(wordToYellow, startSpanYellow);
-            if (startSpanYellow != -1) {
-                int endSpanYellow = startSpanYellow + wordToYellow.length();
-                sb.setSpan(new StyleSpan(Typeface.BOLD), startSpanYellow, endSpanYellow, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                sb.setSpan(new ForegroundColorSpan(Color.YELLOW), startSpanYellow, endSpanYellow, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                startSpanYellow = endSpanYellow;
+    private static void colorizing(SpannableStringBuilder sb, String fullText, String wordToYellow, String wordToGreen) {
+        if (wordToYellow != null) {
+            Pattern patternYellow = Pattern.compile(wordToYellow, Pattern.CASE_INSENSITIVE);
+            Matcher matcherYellow = patternYellow.matcher(fullText);
+            while (matcherYellow.find()) {
+                sb.setSpan(new StyleSpan(Typeface.BOLD), matcherYellow.start(), matcherYellow.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                sb.setSpan(new ForegroundColorSpan(Color.YELLOW), matcherYellow.start(), matcherYellow.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
+
+        // Handle green highlighting
         if (wordToGreen != null) {
             String[] parts = wordToGreen.split("_");
             for (String part : parts) {
-                int startSpanGreen = 0;
-                while (startSpanGreen != -1) {
-                    startSpanGreen = lowerFullText.indexOf(part, startSpanGreen);
-                    if (startSpanGreen != -1) {
-                        int endSpanGreen = startSpanGreen + part.length();
-                        sb.setSpan(new StyleSpan(Typeface.BOLD), startSpanGreen, endSpanGreen, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        sb.setSpan(new ForegroundColorSpan(Color.GREEN), startSpanGreen, endSpanGreen, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        startSpanGreen = endSpanGreen;
-                    }
+                Pattern patternGreen = Pattern.compile(part, Pattern.CASE_INSENSITIVE);
+                Matcher matcherGreen = patternGreen.matcher(fullText);
+                while (matcherGreen.find()) {
+                    sb.setSpan(new StyleSpan(Typeface.BOLD), matcherGreen.start(), matcherGreen.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    sb.setSpan(new ForegroundColorSpan(Color.GREEN), matcherGreen.start(), matcherGreen.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
         }

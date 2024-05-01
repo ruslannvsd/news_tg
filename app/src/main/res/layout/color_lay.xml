@@ -22,7 +22,6 @@
                 android:id="@+id/color"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:background="@color/gray"
                 android:gravity="center"
                 android:textSize="17sp"
                 app:layout_constraintEnd_toEndOf="parent"

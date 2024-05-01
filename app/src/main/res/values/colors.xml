@@ -40,9 +40,9 @@
     <color name="fog">#2B2B2B</color>
     <color name="f_22">#222222</color>
 
-    <color name="chn_1">#006600</color>
-    <color name="chn_2">#405a00</color>
-    <color name="chn_3">#5e4b00</color>
-    <color name="chn_4">#773400</color>
-    <color name="chn_5">#8a0000</color>
+    <color name="chn_1">#004000</color>
+    <color name="chn_2">#293300</color>
+    <color name="chn_3">#342800</color>
+    <color name="chn_4">#3b1a00</color>
+    <color name="chn_5">#420000</color>
 </resources>

@@ -1,7 +1,9 @@
 package com.example.newstg.network;
 
 import static com.example.newstg.consts.Cons.ART_META;
+import static com.example.newstg.consts.Cons.CONTENT;
 import static com.example.newstg.consts.Cons.DATETIME;
+import static com.example.newstg.consts.Cons.DOC;
 import static com.example.newstg.consts.Cons.D_TIME;
 import static com.example.newstg.consts.Cons.JS_TEXT;
 import static com.example.newstg.consts.Cons.MESSAGE_DIV;
@@ -55,6 +57,8 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GetArt {
     Context ctx;
@@ -119,6 +123,7 @@ public class GetArt {
                 }
 
                 if (channels != null) {
+                    Collections.shuffle(channels);
                     progress(channels.size());
                     Toast.makeText(ctx, String.valueOf(channels.size()), Toast.LENGTH_SHORT).show();
                     Callable<Void> task = () -> {
@@ -126,21 +131,18 @@ public class GetArt {
                         int progress = 0;
                         for (Chn chn : channels) {
                             String link = chn.link;
-                            Log.d("Channel", link);
                             final int currentProgress = ++progress;
                             handler.post(() -> {
-                                String[] parts = link.split("/");
-                                String title = parts[parts.length - 1];
                                 if (dialog != null && bnd != null) {
                                     bnd.progressBar.setProgress(currentProgress);
-                                    String text = String.format(Locale.UK, "%d/%d\n%s", currentProgress, channels.size(), title);
+                                    String text = String.format(Locale.UK, "%d/%d\n%s", currentProgress, channels.size(), chn.name);
                                     bnd.progressText.setText(text);
                                 }
                             });
                             if (words == null) {
-                                articles.addAll(gettingArticles(link, hours, keywords));
+                                articles.addAll(gettingArticles(link, hours, chn.category, keywords));
                             } else {
-                                articles.addAll(gettingArticles(link, hours, newKws));
+                                articles.addAll(gettingArticles(link, hours, chn.category, newKws));
                             }
                         }
                         if (articles.isEmpty()) {
@@ -199,7 +201,7 @@ public class GetArt {
         return Jsoup.connect(url).timeout(20 * 1000).get();
     }
 
-    private List<Article> gettingArticles(String link, int hours, List<Word> keywords) {
+    private List<Article> gettingArticles(String link, int hours, int color, List<Word> keywords) {
         Document doc;
         List<Article> articles = new ArrayList<>();
         try {
@@ -210,7 +212,7 @@ public class GetArt {
             }
 
             Elements messageSections = doc.select("div." + MESSAGE_DIV);
-            String chnTitle = doc.select("meta[property=og:title]").first().attr("content");
+            String chnTitle = doc.select(DOC).first().attr(CONTENT);
 
             List<Element> reversibleList = new ArrayList<>(messageSections);
             Collections.reverse(reversibleList);
@@ -229,27 +231,28 @@ public class GetArt {
                             for (Word keyword : keywords) {
                                 String word = keyword.getWord();
                                 String artBody = replaceBR(articleBody);
-                                String lower = artBody.toLowerCase();
                                 if (hasVideo) {
                                     artBody = "[VIDEO]\n\n" + artBody;
                                 }
-                                if (!word.contains("_")) {
-                                    if (lower.contains(word.toLowerCase())) {
-                                        Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, millis);
-                                        if (art != null) {
-                                            articles.add(art);
-                                        }
+                                String[] parts = word.split("_");
+                                boolean allPartsMatch = true;
+                                for (String part : parts) {
+                                    String regex = part.replace("*", "[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ]");
+                                    Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+                                    Matcher matcher = pattern.matcher(artBody);
+                                    if (!matcher.find()) {
+                                        allPartsMatch = false;
+                                        break;
                                     }
-                                } else {
-                                    String[] splitWord = word.split("_");
-                                    if (lower.contains(splitWord[0].toLowerCase()) && lower.contains(splitWord[1].toLowerCase())) {
-                                        Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, millis);
-                                        if (art != null) {
-                                            articles.add(art);
-                                        }
+                                }
+                                if (allPartsMatch) {
+                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, color, artBody, word, millis);
+                                    if (art != null) {
+                                        articles.add(art);
                                     }
                                 }
                             }
+
                         } else {
                             break;
                         }

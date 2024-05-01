@@ -39,9 +39,7 @@ public class InputAd extends RecyclerView.Adapter<InputAd.InputViewHolder> {
         String title = word.getWord();
         h.bnd.word.setText(title);
         h.bnd.word.setTextColor(word.getColor());
-        if (word.getStatus()) {
-            h.bnd.card.setCardBackgroundColor(ctx.getColor(R.color.gray));
-        } else {
+        if (!word.getStatus()) {
             h.bnd.card.setCardBackgroundColor(ctx.getColor(R.color.black));
         }
 

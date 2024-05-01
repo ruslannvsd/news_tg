@@ -1,7 +1,9 @@
 package com.example.newstg.network;
 
 import static com.example.newstg.consts.Cons.ART_META;
+import static com.example.newstg.consts.Cons.CONTENT;
 import static com.example.newstg.consts.Cons.DATETIME;
+import static com.example.newstg.consts.Cons.DOC;
 import static com.example.newstg.consts.Cons.D_TIME;
 import static com.example.newstg.consts.Cons.JS_TEXT;
 import static com.example.newstg.consts.Cons.MESSAGE_DIV;
@@ -34,7 +36,7 @@ public class GetArtOffline {
         List<Article> articles = new ArrayList<>();
         for (Chn chn : channels) {
             try {
-                articles.addAll(gettingArticles(chn.link, interval, keywords));
+                articles.addAll(gettingArticles(chn.link, interval, chn.category, keywords));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -42,7 +44,7 @@ public class GetArtOffline {
         return merging(articles);
     }
 
-    private List<Article> gettingArticles(String link, int hours, List<Word> keywords) throws IOException {
+    private List<Article> gettingArticles(String link, int hours, int color, List<Word> keywords) throws IOException {
         Document doc;
         List<Article> articles = new ArrayList<>();
 
@@ -51,7 +53,7 @@ public class GetArtOffline {
             return articles;
         }
         Elements messageSections = doc.select("div." + MESSAGE_DIV);
-        String chnTitle = doc.select("meta[property=og:title]").first().attr("content");
+        String chnTitle = doc.select(DOC).first().attr(CONTENT);
         List<Element> reversibleList = new ArrayList<>(messageSections);
         Collections.reverse(reversibleList);
         for (Element section : reversibleList) {
@@ -74,7 +76,7 @@ public class GetArtOffline {
                             }
                             if (!word.contains("_")) {
                                 if (lower.contains(word.toLowerCase())) {
-                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, millis);
+                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, color, artBody, word, millis);
                                     if (art != null) {
                                         articles.add(art);
                                     }
@@ -82,7 +84,7 @@ public class GetArtOffline {
                             } else {
                                 String[] splitWord = word.split("_");
                                 if (lower.contains(splitWord[0].toLowerCase()) && lower.contains(splitWord[1].toLowerCase())) {
-                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, artBody, word, millis);
+                                    Article art = new ArticleMaking().makeArticle(chnTitle, section, color, artBody, word, millis);
                                     if (art != null) {
                                         articles.add(art);
                                     }

@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.newstg.adap.ArtAd;
+import com.example.newstg.adap.ChnAd;
 import com.example.newstg.adap.SumAd;
 import com.example.newstg.consts.Cons;
 import com.example.newstg.data.NewsVM;
@@ -89,7 +90,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         });
 
         bnd.channel.setOnClickListener(v -> {
-            new ChnAdd().chlAdd(requireContext(), newsVM, owner);
+            new ChnAdd().chlAdd(requireContext(), newsVM, owner, new ChnAd());
             // newsVM.delChn("https://t.me/s/ukraine100news");
             // Log.i("Deleted", "Deleted");
         });

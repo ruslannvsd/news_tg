@@ -24,6 +24,7 @@
                 android:textStyle="bold"
                 android:inputType="text"
                 android:singleLine="true"
+                android:hint="Enter the name"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

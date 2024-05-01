@@ -52,19 +52,30 @@
                 app:layout_constraintTop_toBottomOf="@id/img"
                 app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:id="@+id/channel"
-                android:layout_width="match_parent"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/channel_card"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="5dp"
-                android:fontFamily="@font/graublau"
-                android:textColor="#68E6B4"
-                android:gravity="center"
-                android:contentDescription="Channel Name"
-                android:textSize="19sp"
+                app:cardCornerRadius="7dp"
+                app:cardBackgroundColor="@color/f_22"
+                app:cardElevation="7dp"
                 app:layout_constraintTop_toBottomOf="@id/keyword"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/keyword" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5" >
+
+                <TextView
+                    android:id="@+id/channel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/graublau"
+                    android:gravity="center"
+                    android:layout_margin="5dp"
+                    android:padding="7dp"
+                    android:contentDescription="Channel Name"
+                    android:textSize="19sp" />
+
+            </androidx.cardview.widget.CardView>
 
             <TextView
                 android:id="@+id/art_body"
@@ -75,7 +86,7 @@
                 android:textSize="17sp"
                 android:textColor="@color/white"
                 android:contentDescription="Body"
-                app:layout_constraintTop_toBottomOf="@id/channel"
+                app:layout_constraintTop_toBottomOf="@id/channel_card"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 

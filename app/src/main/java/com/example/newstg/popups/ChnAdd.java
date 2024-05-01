@@ -13,12 +13,16 @@ import android.widget.Toast;
 import androidx.core.widget.PopupWindowCompat;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.newstg.R;
+import com.example.newstg.adap.ChnAd;
 import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.ChnAddBinding;
 import com.example.newstg.obj.Chn;
 import com.example.newstg.utils.CloseKB;
+import com.google.android.flexbox.FlexboxLayoutManager;
+import com.google.android.flexbox.JustifyContent;
 
 import java.util.HashSet;
 import java.util.List;
@@ -29,14 +33,19 @@ public class ChnAdd {
     PopupWindow window;
     NewsVM newsVM;
     LifecycleOwner owner;
+    ChnAd chnAd;
 
-    public void chlAdd(Context ctx, NewsVM newsVM, LifecycleOwner owner) {
+    public void chlAdd(Context ctx, NewsVM newsVM, LifecycleOwner owner, ChnAd chnAd) {
         this.ctx = ctx;
         this.newsVM = newsVM;
         this.owner = owner;
+        this.chnAd = chnAd;
         View popupView = LayoutInflater.from(ctx).inflate(R.layout.chn_add, new LinearLayout(ctx), false);
         bnd = ChnAddBinding.bind(popupView);
         setupPopupWindow(popupView);
+        newsVM.getChannels().observe(owner, channels -> {
+            setRv(bnd.channels, chnAd, channels, ctx, newsVM);
+        });
     }
 
     private void setupPopupWindow(View popupView) {
@@ -66,11 +75,18 @@ public class ChnAdd {
                         }
                         int added = 0;
                         int existed = 0;
+                        int corrupted = 0;
                         for (String input : inputText.split("\\s+")) {
                             String chn = modifyLink(input.trim());
+                            if (chn == null) {
+                                corrupted += 1;
+                                break;
+                            }
                             if (!existingSet.contains(chn)) {
                                 existingSet.add(chn);
-                                Chn newChn = new Chn(0, chn);
+                                int lastIndex = chn.lastIndexOf('/');
+                                String name = chn.substring(lastIndex + 1);
+                                Chn newChn = new Chn(0, chn, name, ctx.getColor(R.color.fog));
                                 newsVM.insChn(newChn);
                                 added += 1;
                             } else {
@@ -85,6 +101,9 @@ public class ChnAdd {
                         if (existed > 0) {
                             Toast.makeText(ctx, "EXIST: " + existed + " channel(s)", Toast.LENGTH_SHORT).show();
                         }
+                        if (corrupted > 0) {
+                            Toast.makeText(ctx, "CORRUPTED: " + corrupted + " link(s)", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 };
                 newsVM.getChannels().observe(owner, observer);
@@ -97,7 +116,18 @@ public class ChnAdd {
     public static String modifyLink(String link) {
         if (link.contains("https://t.me/") && !link.contains("https://t.me/s/")) {
             return link.replaceFirst("https://t.me/", "https://t.me/s/");
+        } else if (link.contains("https://t.me/s/")) {
+            return link;
         }
-        return link;
+        return null;
+    }
+
+    public static void setRv(RecyclerView rv, ChnAd chnAd, List<Chn> channels, Context ctx, NewsVM newsVM) {
+        chnAd.setChannels(channels, ctx, newsVM);
+        FlexboxLayoutManager flexboxLayoutManager = new FlexboxLayoutManager(ctx);
+        flexboxLayoutManager.setJustifyContent(JustifyContent.FLEX_START);
+        rv.setLayoutManager(flexboxLayoutManager);
+        chnAd.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+        rv.setAdapter(chnAd);
     }
 }

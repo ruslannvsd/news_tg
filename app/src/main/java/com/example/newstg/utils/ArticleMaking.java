@@ -15,12 +15,12 @@ import java.util.List;
 
 public class ArticleMaking {
     @Nullable
-    public Article makeArticle(String chnTitle, Element el, String body, String keyW, long millis) {
+    public Article makeArticle(String chnTitle, Element el, int color, String body, String keyW, long millis) {
         String imgLink = WordFuncs.getLink(el);
         Element linkElement = el.select("span." + ART_META + " a." + SECTION).first();
         String artLink = linkElement.attr(LINK);
         List<String> keywords = new ArrayList<>();
         keywords.add(keyW);
-        return new Article(0, chnTitle, imgLink, artLink, body, millis, keywords);
+        return new Article(0, chnTitle, imgLink, artLink, color, body, millis, keywords);
     }
 }

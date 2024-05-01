@@ -13,6 +13,7 @@ public class Article {
     @ColumnInfo(name = "title") public String chnTitle;
     @ColumnInfo(name = "img") public String image;
     @ColumnInfo(name = "link") public String link;
+    @ColumnInfo(name = "color") public int color;
     @ColumnInfo(name = "body") public String body;
     @ColumnInfo(name = "time") public long time;
     @ColumnInfo(name = "keywords") public List<String> keywords;
@@ -21,6 +22,7 @@ public class Article {
             String chnTitle,
             String image,
             String link,
+            int color,
             String body,
             long time,
             List<String> keywords
@@ -29,6 +31,7 @@ public class Article {
         this.chnTitle = chnTitle;
         this.image = image;
         this.link = link;
+        this.color = color;
         this.body = body;
         this.time = time;
         this.keywords = keywords;
