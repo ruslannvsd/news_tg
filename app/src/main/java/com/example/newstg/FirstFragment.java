@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,10 +35,10 @@ import com.example.newstg.utils.Scheduler;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
     private FragmentFirstBinding bnd;
@@ -75,7 +76,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
                 Log.i("List size", Integer.toString(articles.size()));
                 newsVM.setArticles(articles);
                 newsVM.getAll().observe(owner, keywords -> {
-                    newsVM.setWords(sortingNum(new Count().results(keywords, articles, requireContext())));
+                    newsVM.setWords(sortingNum(new Count().results(keywords, articles), requireContext()));
                 });
             }
         });
@@ -91,27 +92,27 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
 
         bnd.channel.setOnClickListener(v -> {
             new ChnAdd().chlAdd(requireContext(), newsVM, owner, new ChnAd());
-            // newsVM.delChn("https://t.me/s/ukraine100news");
-            // Log.i("Deleted", "Deleted");
         });
-        bnd.makeChg.setOnClickListener(v ->
-                new InputPopup().inputPopup(
-                        requireContext(),
-                        newsVM,
-                        owner,
-                        artRv,
-                        artAd,
-                        sumRv,
-                        sumAd,
-                        bnd.unique
-                )
+        bnd.makeChg.setOnClickListener(v -> {
+                    new InputPopup().inputPopup(
+                            requireContext(),
+                            newsVM,
+                            owner,
+                            artRv,
+                            artAd,
+                            sumRv,
+                            sumAd,
+                            bnd.unique
+                    );
+                    bnd.unique.setVisibility(View.GONE);
+                }
         );
         newsVM.getArticles().observe(getViewLifecycleOwner(), articles -> {
             artAd.setArticles(articles, requireContext(), null);
             rvSetting(artRv, artAd, requireContext(), false);
         });
         newsVM.getResults().observe(getViewLifecycleOwner(), results -> {
-            sumAd.setWords(results, requireContext(), -1);
+            sumAd.setSummary(results, requireContext(), -1);
             rvSetting(sumRv, sumAd, requireContext(), true);
         });
     }
@@ -122,26 +123,38 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         bnd = null;
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onKeywordClick(@NonNull Word keyword) {
-        newsVM.getArticles().observe(getViewLifecycleOwner(), articles -> {
-            List<Article> customArt = new ArrayList<>();
-            if (keyword.getWord().equals(Cons.ALL)) {
-                customArt = articles;
-                uniqueKeywords(new ArrayList<>());
-            } else {
-                for (Article article : articles) {
-                    if (article.keywords.contains(keyword.getWord())) {
-                        customArt.add(article);
-                    }
+        newsVM.getArticles().observe(getViewLifecycleOwner(), new Observer<List<Article>>() {
+            @Override
+            public void onChanged(List<Article> articles) {
+                if (articles == null || articles.isEmpty()) {
+                    return;
                 }
-                uniqueKeywords(customArt);
+
+                if (keyword.getWord().equals(Cons.ALL)) {
+                    updateUI(articles, null, keyword.getWord());
+                } else {
+                    List<Article> filteredArticles = articles.stream()
+                            .filter(article -> article.keywords.contains(keyword.getWord()))
+                            .collect(Collectors.toList());
+
+                    Set<String> associated = associated(filteredArticles);
+                    updateUI(filteredArticles, associated, keyword.getWord());
+                }
+                newsVM.getArticles().removeObserver(this);
             }
-            artAd.setArticles(customArt, requireContext(), keyword.getWord());
-            artAd.notifyDataSetChanged();
         });
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void updateUI(List<Article> articles, Set<String> associatedKeywords, String keyword) {
+        artAd.setArticles(articles, requireContext(), keyword);
+        artAd.notifyDataSetChanged();
+        sumAd.associated(associatedKeywords);
+        sumAd.notifyDataSetChanged();
+    }
+
 
     private void rvSetting(
             RecyclerView rv,
@@ -161,15 +174,14 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         rv.setAdapter(ad);
     }
 
-    public void uniqueKeywords(List<Article> articles) {
+    public Set<String> associated(List<Article> articles) {
         if (articles.isEmpty()) {
-            unique.setText(null);
-            return;
+            return null;
         }
         Set<String> uniqueKeywordsSet = new HashSet<>();
         for (Article article : articles) {
             uniqueKeywordsSet.addAll(article.keywords);
         }
-        unique.setText(String.join(" | ", new ArrayList<>(uniqueKeywordsSet)));
+        return uniqueKeywordsSet;
     }
 }

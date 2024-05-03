@@ -56,7 +56,7 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         long minutes = TimeUnit.MILLISECONDS.toMinutes(differenceMillis) % 60;
         String timeDifference = String.format(Locale.getDefault(), "%dh %dm ago / ", hours, minutes);
         String time = TimeFuncs.convertToReadableTime(art.time);
-        linkify(art.chnTitle, art.link, h.bnd.channel);
+        titlesAndLinks(art.chnTitle, art.link, h.bnd.channel, h.bnd.forwarded);
         h.bnd.artTime.setText(timeDifference + time);
         h.bnd.keyword.setText(String.valueOf(art.keywords));
         if (!Objects.equals(art.image, "IMG")) {
@@ -111,40 +111,28 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
     @NonNull
     private static SpannableStringBuilder boldWords(String fullText, @NonNull List<String> wordsToBold, String chosen) {
         SpannableStringBuilder sb = new SpannableStringBuilder(fullText);
-        String lowerFullText = fullText.toLowerCase(Locale.ROOT);
         for (String item : wordsToBold) {
-            if (item.contains("_")) {
-                String[] splitWords = item.split("_");
-                for (String wordToBold : splitWords) {
-                    colorizing(sb, lowerFullText, wordToBold, chosen);
-                }
-            } else {
-                colorizing(sb, lowerFullText, item, chosen);
+            String[] splitWords = item.split("[/_]");
+            for (String wordToBold : splitWords) {
+                coloring(sb, wordToBold, fullText, Color.YELLOW);
+            }
+        }
+        if (chosen != null) {
+            String[] parts = chosen.split("[/_]");
+            for (String part : parts) {
+                coloring(sb, part, fullText, Color.GREEN);
             }
         }
         return sb;
     }
 
-    private static void colorizing(SpannableStringBuilder sb, String fullText, String wordToYellow, String wordToGreen) {
-        if (wordToYellow != null) {
-            Pattern patternYellow = Pattern.compile(wordToYellow, Pattern.CASE_INSENSITIVE);
-            Matcher matcherYellow = patternYellow.matcher(fullText);
-            while (matcherYellow.find()) {
-                sb.setSpan(new StyleSpan(Typeface.BOLD), matcherYellow.start(), matcherYellow.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                sb.setSpan(new ForegroundColorSpan(Color.YELLOW), matcherYellow.start(), matcherYellow.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-        }
-
-        // Handle green highlighting
-        if (wordToGreen != null) {
-            String[] parts = wordToGreen.split("_");
-            for (String part : parts) {
-                Pattern patternGreen = Pattern.compile(part, Pattern.CASE_INSENSITIVE);
-                Matcher matcherGreen = patternGreen.matcher(fullText);
-                while (matcherGreen.find()) {
-                    sb.setSpan(new StyleSpan(Typeface.BOLD), matcherGreen.start(), matcherGreen.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    sb.setSpan(new ForegroundColorSpan(Color.GREEN), matcherGreen.start(), matcherGreen.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                }
+    public static void coloring(Spannable sb, String textToStyle, String fullText, int color) {
+        if (textToStyle != null) {
+            Pattern pattern = Pattern.compile(textToStyle, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(fullText);
+            while (matcher.find()) {
+                sb.setSpan(new StyleSpan(Typeface.BOLD), matcher.start(), matcher.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                sb.setSpan(new ForegroundColorSpan(color), matcher.start(), matcher.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
     }
@@ -153,5 +141,14 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         String formattedText = "<a href='" + url + "'>" + title + "</a>";
         tv.setText(Html.fromHtml(formattedText, Html.FROM_HTML_MODE_COMPACT));
         tv.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+    private void titlesAndLinks(String title, String link, TextView main, TextView forward) {
+        String[] titles = title.split("\\|");
+        String[] links = link.split("\\|");
+        linkify(titles[0], links[0], main);
+        if (titles.length > 1 && links.length > 1 && !titles[1].isEmpty() && !links[1].isEmpty()) {
+            forward.setVisibility(View.VISIBLE);
+            linkify(titles[1], links[1], forward);
+        }
     }
 }

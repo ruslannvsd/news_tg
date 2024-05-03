@@ -32,5 +32,4 @@ public class Word {
     public int getColor() { return color; }
     public int getNum() { return num; }
     public boolean getStatus() { return status; }
-
 }

@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,11 +16,11 @@ import com.example.newstg.databinding.SumLayBinding;
 import com.example.newstg.obj.Word;
 
 import java.util.List;
+import java.util.Set;
 
 public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
-    int largest;
-    int smallest;
     List<Word> keywords = emptyList();
+    Set<String> associated = null;
     Context ctx;
     private int pressed;
     private final OnKeywordClick onKeywordClick;
@@ -34,30 +35,36 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull SumViewHolder h, int p) {
         Word wd = keywords.get(p);
-        String sum = wd.getWord() + " - " + wd.getNum();
+        String sum = wd.getWord() + " : " + wd.getNum();
         h.bnd.keyword.setText(sum);
-        int color = cardBgColor(wd.getNum(), ctx);
-        h.bnd.card.setBackgroundColor(color);
-        h.bnd.keyword.setTextColor(wd.getColor());
 
-        if (pressed == p) {
-            h.bnd.card.setBackgroundColor(ctx.getColor(R.color.black));
+        int backgroundColor;
+        int textColor;
+        if (p == 0) {
+            backgroundColor = wd.getId();
+            textColor = wd.getColor();
+        } else if (pressed == p) {
+            backgroundColor = wd.getColor();
+            textColor = ctx.getColor(R.color.black);
+        } else if (associated != null && associated.contains(wd.getWord()) && pressed != p) {
+            backgroundColor = ctx.getColor(R.color.black);
+            textColor = wd.getColor();
         } else {
-            if (p == 0) {
-                h.bnd.card.setBackgroundColor(ctx.getColor(R.color.gray));
-            } else {
-                h.bnd.card.setBackgroundColor(color);
-            }
+            backgroundColor = wd.getId();
+            textColor = wd.getColor();
         }
+
+        h.bnd.card.setBackgroundColor(backgroundColor);
+        h.bnd.keyword.setTextColor(textColor);
+
         h.itemView.setOnClickListener(v -> {
             notifyItemChanged(pressed);
-            pressed = h.getAdapterPosition();
+            pressed = h.getBindingAdapterPosition();
             notifyItemChanged(pressed);
             if (onKeywordClick != null) {
                 onKeywordClick.onKeywordClick(wd);
             }
         });
-
     }
 
     @Override
@@ -71,32 +78,14 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
         }
     }
     @SuppressLint("NotifyDataSetChanged")
-    public void setWords(List<Word> keywords, Context ctx, int pressed) {
+    public void setSummary(List<Word> keywords, Context ctx, int pressed) {
         this.pressed = pressed;
         this.keywords = keywords;
         this.ctx = ctx;
-        if (keywords.size() > 1) {
-            this.largest = keywords.get(1).getNum();
-            this.smallest = keywords.get(keywords.size()-1).getNum();
-        }
         notifyDataSetChanged();
     }
-    public int cardBgColor(int quantity, Context ctx) {
-        if (smallest == largest) {
-            return ctx.getColor(R.color.two);
-        }
-        float range = (largest - smallest) / 5.0f;
-        if (quantity > largest) {
-            return ctx.getColor(R.color.green);
-        } else if (quantity <= smallest + range) {
-            return ctx.getColor(R.color.five);
-        } else if (quantity <= smallest + 2 * range) {
-            return ctx.getColor(R.color.four);
-        } else if (quantity <= smallest + 3 * range) {
-            return ctx.getColor(R.color.three);
-        } else {
-            return ctx.getColor(R.color.two);
-        }
+    public void associated(Set<String> associated) {
+        this.associated = associated;
     }
 
     public interface OnKeywordClick {

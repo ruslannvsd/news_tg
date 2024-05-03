@@ -91,6 +91,21 @@
                 app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
+                android:id="@+id/forwarded"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:visibility="gone"
+                android:gravity="end"
+                android:fontFamily="@font/graublau"
+                android:textSize="17sp"
+                android:textColor="@color/white"
+                android:contentDescription="Body"
+                app:layout_constraintTop_toBottomOf="@id/art_body"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
                 android:id="@+id/art_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -99,7 +114,7 @@
                 android:textAlignment="textEnd"
                 android:textSize="19sp"
                 android:contentDescription="Time"
-                app:layout_constraintTop_toBottomOf="@id/art_body"
+                app:layout_constraintTop_toBottomOf="@id/forwarded"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 

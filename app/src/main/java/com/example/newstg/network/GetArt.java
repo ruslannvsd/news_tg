@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -159,12 +160,12 @@ public class GetArt {
                                 newsVm.setArticles(finalList);
 
                                 if (words == null) {
-                                    newsVm.setWords(sortingNum(new Count().results(keywords, finalList, ctx)));
+                                    newsVm.setWords(sortingNum(new Count().results(keywords, finalList), ctx));
                                 } else {
                                     for (Word kw : newKws) {
                                         Log.i("New Kw", kw.getWord());
                                     }
-                                    newsVm.setWords(sortingNum(new Count().results(newKws, finalList, ctx)));
+                                    newsVm.setWords(sortingNum(new Count().results(newKws, finalList), ctx));
                                 }
                                 dialog.dismiss();
                             });
@@ -219,6 +220,8 @@ public class GetArt {
 
             for (Element section : reversibleList) {
                 Elements allTextDivs = section.select("div." + TEXT_DIV + JS_TEXT);
+
+
                 boolean hasVideo = !section.select(Cons.VIDEO).isEmpty();
                 for (Element articleBody : allTextDivs) {
                     if (articleBody.parent() != null && !articleBody.parent().hasClass(MESS_REPLY)) {
@@ -234,15 +237,16 @@ public class GetArt {
                                 if (hasVideo) {
                                     artBody = "[VIDEO]\n\n" + artBody;
                                 }
-                                String[] parts = word.split("_");
-                                boolean allPartsMatch = true;
-                                for (String part : parts) {
-                                    String regex = part.replace("*", "[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ]");
-                                    Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-                                    Matcher matcher = pattern.matcher(artBody);
-                                    if (!matcher.find()) {
-                                        allPartsMatch = false;
-                                        break;
+                                boolean allPartsMatch = false;
+                                if (!word.contains("/")) {
+                                    allPartsMatch = wordTreating(word, artBody);
+                                } else {
+                                    String[] slashedParts = word.split("/");
+                                    for (String part : slashedParts) {
+                                        allPartsMatch = wordTreating(part, artBody);
+                                        if (allPartsMatch) {
+                                            break;
+                                        }
                                     }
                                 }
                                 if (allPartsMatch) {
@@ -270,10 +274,25 @@ public class GetArt {
                     dialog.dismiss();
                 }
             });
+            unique.setVisibility(View.VISIBLE);
             unique.setText(errorText);
             Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
             throw new RuntimeException(e);
         }
         return articles;
+    }
+    private boolean wordTreating(String word, String artBody) {
+        String[] parts = word.split("_");
+        boolean allPartsMatch = true;
+        for (String part : parts) {
+            String regex = part.replace("*", "[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ]");
+            Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(artBody);
+            if (!matcher.find()) {
+                allPartsMatch = false;
+                break;
+            }
+        }
+        return allPartsMatch;
     }
 }

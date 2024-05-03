@@ -20,7 +20,6 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.newstg.R;
-import com.example.newstg.adap.ColorPickerAd;
 import com.example.newstg.adap.InputAd;
 import com.example.newstg.adap.ArtAd;
 import com.example.newstg.adap.SumAd;
@@ -29,7 +28,6 @@ import com.example.newstg.databinding.InputPopupBinding;
 import com.example.newstg.network.GetArt;
 import com.example.newstg.obj.Word;
 import com.example.newstg.utils.CloseKB;
-import com.example.newstg.utils.ColorPickerCallback;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
