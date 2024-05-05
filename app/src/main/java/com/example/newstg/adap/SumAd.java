@@ -15,15 +15,20 @@ import com.example.newstg.R;
 import com.example.newstg.databinding.SumLayBinding;
 import com.example.newstg.obj.Word;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
     List<Word> keywords = emptyList();
     Set<String> associated = null;
     Context ctx;
     private int pressed;
+    Set<Integer> longPressedList = new HashSet<>();
     private final OnKeywordClick onKeywordClick;
+    private final OnLongKeywordClick onTwoKeywords;
 
     @NonNull
     @Override
@@ -43,10 +48,10 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
         if (p == 0) {
             backgroundColor = wd.getId();
             textColor = wd.getColor();
-        } else if (pressed == p) {
+        } else if (pressed == p || longPressedList.contains(p)) {
             backgroundColor = wd.getColor();
             textColor = ctx.getColor(R.color.black);
-        } else if (associated != null && associated.contains(wd.getWord()) && pressed != p) {
+        } else if (associated != null && associated.contains(wd.getWord()) && pressed != p && !longPressedList.contains(p)) {
             backgroundColor = ctx.getColor(R.color.black);
             textColor = wd.getColor();
         } else {
@@ -58,12 +63,31 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
         h.bnd.keyword.setTextColor(textColor);
 
         h.itemView.setOnClickListener(v -> {
-            notifyItemChanged(pressed);
+            int oldPressed = pressed;
+            notifyItemChanged(oldPressed);
             pressed = h.getBindingAdapterPosition();
             notifyItemChanged(pressed);
             if (onKeywordClick != null) {
-                onKeywordClick.onKeywordClick(wd);
+                onKeywordClick.onKeywordClick(keywords.get(pressed));
             }
+        });
+
+        h.itemView.setOnLongClickListener(v -> {
+            int currentPos = h.getBindingAdapterPosition();
+            if (associated != null && associated.contains(wd.getWord())) {
+                if (!longPressedList.add(currentPos)) {
+                    longPressedList.remove(currentPos);
+                }
+                notifyItemChanged(currentPos);
+                if (onTwoKeywords != null && pressed != -1) {
+                    List<Word> selectedWords = new ArrayList<>();
+                    selectedWords.add(keywords.get(pressed));
+                    selectedWords.addAll(longPressedList.stream().map(keywords::get).collect(Collectors.toList()));
+                    onTwoKeywords.onTwoKeywords(selectedWords);
+                }
+                return true;
+            }
+            return false;
         });
     }
 
@@ -91,5 +115,13 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
     public interface OnKeywordClick {
         void onKeywordClick(Word keyword);
     }
-    public SumAd(OnKeywordClick onKeywordClick) { this.onKeywordClick = onKeywordClick; }
+    public interface OnLongKeywordClick {
+        void onTwoKeywords(List<Word> words);
+    }
+
+    public SumAd(OnKeywordClick onKeywordClick, OnLongKeywordClick onTwoKeywords) {
+        this.onKeywordClick = onKeywordClick;
+        this.onTwoKeywords = onTwoKeywords;
+        this.pressed = -1;
+    }
 }

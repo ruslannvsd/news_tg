@@ -48,7 +48,7 @@ public class NtcWorker extends Worker {
             List<Article> articles = new GetArtOffline().getArt(keywords, channels, interval);
             if (!articles.isEmpty()) {
                 db.artDao().insertAll(articles);
-                List<Word> words = FetchUtils.sortingNum(new Count().results(keywords, articles, ctx));
+                List<Word> words = FetchUtils.sortingNum(new Count().results(keywords, articles), ctx);
                 String summary = summary(words);
                 notification(summary, interval);
                 Log.i("WorkManager", "Notification Made");

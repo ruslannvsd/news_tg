@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArticleMaking {
+    String sourceTitle = null;
+    String sourceLink = null;
     @Nullable
     public Article makeArticle(
             String chnTitle,
@@ -30,7 +32,6 @@ public class ArticleMaking {
         String imgLink = WordFuncs.getLink(el);
         Element linkElement = el.select("span." + ART_META + " a." + SECTION).first();
         String artLink = linkElement.attr(LINK);
-
         Element forwarded = el.select(FORWARDED).first();
         if (forwarded != null) {
             Pair<String, String> forwardedArt = forwardArt(forwarded);
@@ -39,13 +40,12 @@ public class ArticleMaking {
         }
         List<String> keywords = new ArrayList<>();
         keywords.add(keyW);
-        Log.i("keywords", keyW);
+        sourceTitle = null;
+        sourceLink = null;
         return new Article(0, chnTitle, imgLink, artLink, color, body, millis, keywords);
     }
 
     private Pair<String, String> forwardArt(Element forwarded) {
-        String sourceTitle = "";
-        String sourceLink = "";
         if (forwarded != null) {
             sourceTitle = forwarded.text();
             sourceLink = forwarded.attr("href");

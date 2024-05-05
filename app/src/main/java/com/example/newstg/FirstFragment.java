@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
+public class FirstFragment extends Fragment implements SumAd.OnKeywordClick, SumAd.OnLongKeywordClick {
     private FragmentFirstBinding bnd;
     NewsVM newsVM;
     LifecycleOwner owner;
@@ -68,7 +68,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         artRv = bnd.articleRv;
         artAd = new ArtAd();
         sumRv = bnd.summaryRv;
-        sumAd = new SumAd(this);
+        sumAd = new SumAd(this, this);
 
         newsVM.offArticles().observe(owner, articles -> {
             newsVM.clearArticles();
@@ -82,7 +82,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         });
 
 
-        bnd.on.setOnClickListener(v -> new Scheduler().setupWorkSchedules(requireContext(), 22, 24));
+        bnd.on.setOnClickListener(v -> new Scheduler().setupWorkSchedules(requireContext(), 24, 4));
         bnd.off.setOnClickListener(v -> {
             Scheduler scheduler = new Scheduler();
             scheduler.cancelPeriodicWork(Scheduler.HOURS_24);
@@ -123,39 +123,6 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         bnd = null;
     }
 
-    @Override
-    public void onKeywordClick(@NonNull Word keyword) {
-        newsVM.getArticles().observe(getViewLifecycleOwner(), new Observer<List<Article>>() {
-            @Override
-            public void onChanged(List<Article> articles) {
-                if (articles == null || articles.isEmpty()) {
-                    return;
-                }
-
-                if (keyword.getWord().equals(Cons.ALL)) {
-                    updateUI(articles, null, keyword.getWord());
-                } else {
-                    List<Article> filteredArticles = articles.stream()
-                            .filter(article -> article.keywords.contains(keyword.getWord()))
-                            .collect(Collectors.toList());
-
-                    Set<String> associated = associated(filteredArticles);
-                    updateUI(filteredArticles, associated, keyword.getWord());
-                }
-                newsVM.getArticles().removeObserver(this);
-            }
-        });
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    private void updateUI(List<Article> articles, Set<String> associatedKeywords, String keyword) {
-        artAd.setArticles(articles, requireContext(), keyword);
-        artAd.notifyDataSetChanged();
-        sumAd.associated(associatedKeywords);
-        sumAd.notifyDataSetChanged();
-    }
-
-
     private void rvSetting(
             RecyclerView rv,
             RecyclerView.Adapter<? extends RecyclerView.ViewHolder> ad,
@@ -174,7 +141,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
         rv.setAdapter(ad);
     }
 
-    public Set<String> associated(List<Article> articles) {
+    public Set<String> associated(@NonNull List<Article> articles) {
         if (articles.isEmpty()) {
             return null;
         }
@@ -183,5 +150,62 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick {
             uniqueKeywordsSet.addAll(article.keywords);
         }
         return uniqueKeywordsSet;
+    }
+
+    @Override
+    public void onKeywordClick(@NonNull Word keyword) {
+        newsVM.getArticles().observe(getViewLifecycleOwner(), new Observer<List<Article>>() {
+            @Override
+            public void onChanged(List<Article> articles) {
+                if (articles == null || articles.isEmpty()) {
+                    return;
+                }
+
+                if (keyword.getWord().equals(Cons.ALL)) {
+                    Set<String> words = new HashSet<>();
+                    words.add(keyword.getWord());
+                    updateUI(articles, null, words);
+                } else {
+                    List<Article> filteredArticles = articles.stream()
+                            .filter(article -> article.keywords.contains(keyword.getWord()))
+                            .collect(Collectors.toList());
+
+                    Set<String> associated = associated(filteredArticles);
+                    Set<String> words = new HashSet<>();
+                    words.add(keyword.getWord());
+                    updateUI(filteredArticles, associated, words);
+                }
+                newsVM.getArticles().removeObserver(this);
+            }
+        });
+    }
+
+    @Override
+    public void onTwoKeywords(List<Word> words) {
+        newsVM.getArticles().observe(getViewLifecycleOwner(), new Observer<List<Article>>() {
+            @Override
+            public void onChanged(List<Article> articles) {
+                if (articles == null || articles.isEmpty()) {
+                    return;
+                }
+                Set<String> wordSet = words.stream()
+                        .map(Word::getWord)
+                        .collect(Collectors.toSet());
+                List<Article> filteredArticles = articles.stream()
+                        .filter(article -> new HashSet<>(article.keywords).containsAll(wordSet))
+                        .collect(Collectors.toList());
+                Set<String> associated = associated(filteredArticles);
+                updateUI(filteredArticles, associated, wordSet);
+                newsVM.getArticles().removeObserver(this);
+            }
+        });
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void updateUI(List<Article> articles, Set<String> associatedKeywords, Set<String> words) {
+        artAd.setArticles(articles, requireContext(), words);
+        artAd.notifyDataSetChanged();
+        sumAd.associated(associatedKeywords);
+        sumAd.notifyDataSetChanged();
     }
 }

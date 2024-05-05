@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.newstg.R;
 import com.example.newstg.databinding.ArLayBinding;
 import com.example.newstg.obj.Article;
@@ -29,6 +30,7 @@ import com.example.newstg.utils.TimeFuncs;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,7 +38,7 @@ import java.util.regex.Pattern;
 public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
     List<Article> articles = emptyList();
     Context ctx;
-    String chosen;
+    Set<String> words;
     @NonNull
     public ArticleViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent, int viewType) {
@@ -57,16 +59,23 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         String timeDifference = String.format(Locale.getDefault(), "%dh %dm ago / ", hours, minutes);
         String time = TimeFuncs.convertToReadableTime(art.time);
         titlesAndLinks(art.chnTitle, art.link, h.bnd.channel, h.bnd.forwarded);
+
         h.bnd.artTime.setText(timeDifference + time);
         h.bnd.keyword.setText(String.valueOf(art.keywords));
         if (!Objects.equals(art.image, "IMG")) {
             Glide.with(ctx).load(R.drawable.line).placeholder(R.drawable.load).into(h.bnd.divider);
-            Glide.with(ctx).load(art.image).dontTransform().placeholder(R.drawable.load).into(h.bnd.img);
+            Glide.with(ctx)
+                    .load(art.image)
+                    .dontTransform()
+                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .placeholder(R.drawable.load)
+                    .into(h.bnd.img);
         } else {
             Glide.with(ctx).load(R.drawable.line).placeholder(R.drawable.load).into(h.bnd.divider);
             h.bnd.img.setVisibility(View.GONE);
         }
-        SpannableStringBuilder textWithBold = boldWords(art.body, art.keywords, chosen);
+        SpannableStringBuilder textWithBold = wordStyling(art.body, art.keywords, words);
         h.bnd.artBody.setText(textWithBold);
     }
 
@@ -82,10 +91,10 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         }
     }
     @SuppressLint("NotifyDataSetChanged")
-    public void setArticles(List<Article> articles, Context ctx, String keyword) {
+    public void setArticles(List<Article> articles, Context ctx, Set<String> words) {
         this.articles = articles;
         this.ctx = ctx;
-        this.chosen = keyword;
+        this.words = words;
         notifyDataSetChanged();
     }
 
@@ -108,30 +117,35 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
             return ctx.getColor(R.color.seven);
         }
     }
+
     @NonNull
-    private static SpannableStringBuilder boldWords(String fullText, @NonNull List<String> wordsToBold, String chosen) {
+    private static SpannableStringBuilder wordStyling(String fullText, @NonNull List<String> wordsToStyle, Set<String> wordsSpecific)  {
         SpannableStringBuilder sb = new SpannableStringBuilder(fullText);
-        for (String item : wordsToBold) {
+        for (String item : wordsToStyle) {
             String[] splitWords = item.split("[/_]");
-            for (String wordToBold : splitWords) {
-                coloring(sb, wordToBold, fullText, Color.YELLOW);
+            for (String word : splitWords) {
+                coloring(sb, word, fullText, Color.GRAY, false);
             }
         }
-        if (chosen != null) {
-            String[] parts = chosen.split("[/_]");
-            for (String part : parts) {
-                coloring(sb, part, fullText, Color.GREEN);
+        if (wordsSpecific != null) {
+            for (String item : wordsSpecific) {
+                String[] parts = item.split("[/_]");
+                for (String part : parts) {
+                    coloring(sb, part, fullText, Color.GREEN, true);
+                }
             }
         }
         return sb;
     }
 
-    public static void coloring(Spannable sb, String textToStyle, String fullText, int color) {
+    public static void coloring(Spannable sb, String textToStyle, String fullText, int color, boolean bold) {
         if (textToStyle != null) {
             Pattern pattern = Pattern.compile(textToStyle, Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(fullText);
             while (matcher.find()) {
-                sb.setSpan(new StyleSpan(Typeface.BOLD), matcher.start(), matcher.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                if (bold) {
+                    sb.setSpan(new StyleSpan(Typeface.BOLD), matcher.start(), matcher.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
                 sb.setSpan(new ForegroundColorSpan(color), matcher.start(), matcher.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
@@ -142,6 +156,7 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         tv.setText(Html.fromHtml(formattedText, Html.FROM_HTML_MODE_COMPACT));
         tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
+
     private void titlesAndLinks(String title, String link, TextView main, TextView forward) {
         String[] titles = title.split("\\|");
         String[] links = link.split("\\|");
@@ -149,6 +164,9 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         if (titles.length > 1 && links.length > 1 && !titles[1].isEmpty() && !links[1].isEmpty()) {
             forward.setVisibility(View.VISIBLE);
             linkify(titles[1], links[1], forward);
+        } else {
+            forward.setText(null);
+            forward.setVisibility(View.GONE);
         }
     }
 }

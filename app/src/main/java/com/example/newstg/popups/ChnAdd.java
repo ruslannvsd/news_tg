@@ -46,7 +46,10 @@ public class ChnAdd {
         newsVM.getChannels().observe(owner, channels -> {
             setRv(bnd.channels, chnAd, channels, ctx, newsVM);
         });
+        Toast.makeText(ctx, "Enter your channel as copied.", Toast.LENGTH_SHORT).show();
+        bnd.chn.setOnKeyListener(this::linkAdding);
     }
+
 
     private void setupPopupWindow(View popupView) {
         window = new PopupWindow(popupView, LinearLayout.LayoutParams.MATCH_PARENT,
@@ -54,8 +57,6 @@ public class ChnAdd {
         window.setElevation(2f);
         window.showAtLocation(popupView, Gravity.CENTER, 0, 0);
         PopupWindowCompat.setWindowLayoutType(window, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
-        Toast.makeText(ctx, "Enter your channel as copied.", Toast.LENGTH_SHORT).show();
-        bnd.chn.setOnKeyListener(this::linkAdding);
     }
 
     private boolean linkAdding(View v, int keyCode, KeyEvent event) {
