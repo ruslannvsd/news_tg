@@ -22,8 +22,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FetchUtils {
-    int largest;
-    int smallest;
+    public static int total = 0;
     @NonNull
     public static String replaceBR(@NonNull Element element) {
         String[] articleBodyStr = element.html().split("<br>");
@@ -46,7 +45,9 @@ public class FetchUtils {
                             return article1;
                         }))
                 .values());
-        return sorting(merged);
+        List<Article> sorted = sorting(merged);
+        total = sorted.size();
+        return sorted;
     }
 
     public static List<Word> sortingNum(List<Word> words, Context ctx) {
@@ -55,10 +56,6 @@ public class FetchUtils {
                 .sorted(Comparator.comparingInt(Word::getNum).reversed())
                 .collect(Collectors.toList());
         List<Word> coloredKw = cardColoring(keywords, ctx);
-        int total = 0;
-        for (Word word : coloredKw) {
-            total += word.getNum();
-        }
         Word allWord = new Word(ctx.getColor(R.color.green), Cons.ALL, ctx.getColor(R.color.black), total, true);
         coloredKw.add(0, allWord);
         return coloredKw;

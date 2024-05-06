@@ -102,14 +102,14 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick, Sum
                             artAd,
                             sumRv,
                             sumAd,
-                            bnd.unique
+                            unique
                     );
-                    bnd.unique.setVisibility(View.GONE);
                 }
         );
         newsVM.getArticles().observe(getViewLifecycleOwner(), articles -> {
             artAd.setArticles(articles, requireContext(), null);
             rvSetting(artRv, artAd, requireContext(), false);
+            new Count().articleAmountText(unique, articles.size());
         });
         newsVM.getResults().observe(getViewLifecycleOwner(), results -> {
             sumAd.setSummary(results, requireContext(), -1);
@@ -160,11 +160,8 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick, Sum
                 if (articles == null || articles.isEmpty()) {
                     return;
                 }
-
                 if (keyword.getWord().equals(Cons.ALL)) {
-                    Set<String> words = new HashSet<>();
-                    words.add(keyword.getWord());
-                    updateUI(articles, null, words);
+                    updateUI(articles, null, null, true);
                 } else {
                     List<Article> filteredArticles = articles.stream()
                             .filter(article -> article.keywords.contains(keyword.getWord()))
@@ -173,7 +170,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick, Sum
                     Set<String> associated = associated(filteredArticles);
                     Set<String> words = new HashSet<>();
                     words.add(keyword.getWord());
-                    updateUI(filteredArticles, associated, words);
+                    updateUI(filteredArticles, associated, words, true);
                 }
                 newsVM.getArticles().removeObserver(this);
             }
@@ -181,7 +178,7 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick, Sum
     }
 
     @Override
-    public void onTwoKeywords(List<Word> words) {
+    public void onLongClick(List<Word> words) {
         newsVM.getArticles().observe(getViewLifecycleOwner(), new Observer<List<Article>>() {
             @Override
             public void onChanged(List<Article> articles) {
@@ -195,17 +192,19 @@ public class FirstFragment extends Fragment implements SumAd.OnKeywordClick, Sum
                         .filter(article -> new HashSet<>(article.keywords).containsAll(wordSet))
                         .collect(Collectors.toList());
                 Set<String> associated = associated(filteredArticles);
-                updateUI(filteredArticles, associated, wordSet);
+                updateUI(filteredArticles, associated, wordSet, false);
                 newsVM.getArticles().removeObserver(this);
             }
         });
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private void updateUI(List<Article> articles, Set<String> associatedKeywords, Set<String> words) {
+    @SuppressLint({"NotifyDataSetChanged", "SetTextI18n"})
+    private void updateUI(List<Article> articles, Set<String> associatedKeywords, Set<String> words, boolean shortClick) {
+        int amount = articles.size();
+        new Count().articleAmountText(unique, amount);
         artAd.setArticles(articles, requireContext(), words);
         artAd.notifyDataSetChanged();
-        sumAd.associated(associatedKeywords);
+        sumAd.associated(associatedKeywords, shortClick);
         sumAd.notifyDataSetChanged();
     }
 }

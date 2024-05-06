@@ -28,7 +28,7 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
     private int pressed;
     Set<Integer> longPressedList = new HashSet<>();
     private final OnKeywordClick onKeywordClick;
-    private final OnLongKeywordClick onTwoKeywords;
+    private final OnLongKeywordClick onLongClick;
 
     @NonNull
     @Override
@@ -42,7 +42,6 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
         Word wd = keywords.get(p);
         String sum = wd.getWord() + " : " + wd.getNum();
         h.bnd.keyword.setText(sum);
-
         int backgroundColor;
         int textColor;
         if (p == 0) {
@@ -58,7 +57,6 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
             backgroundColor = wd.getId();
             textColor = wd.getColor();
         }
-
         h.bnd.card.setBackgroundColor(backgroundColor);
         h.bnd.keyword.setTextColor(textColor);
 
@@ -79,11 +77,11 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
                     longPressedList.remove(currentPos);
                 }
                 notifyItemChanged(currentPos);
-                if (onTwoKeywords != null && pressed != -1) {
+                if (onLongClick != null && pressed != -1) {
                     List<Word> selectedWords = new ArrayList<>();
                     selectedWords.add(keywords.get(pressed));
                     selectedWords.addAll(longPressedList.stream().map(keywords::get).collect(Collectors.toList()));
-                    onTwoKeywords.onTwoKeywords(selectedWords);
+                    onLongClick.onLongClick(selectedWords);
                 }
                 return true;
             }
@@ -108,20 +106,24 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
         this.ctx = ctx;
         notifyDataSetChanged();
     }
-    public void associated(Set<String> associated) {
+    public void associated(Set<String> associated, boolean shortClick) {
         this.associated = associated;
+        if (shortClick) {
+            longPressedList = new HashSet<>();
+        }
     }
 
     public interface OnKeywordClick {
         void onKeywordClick(Word keyword);
     }
+
     public interface OnLongKeywordClick {
-        void onTwoKeywords(List<Word> words);
+        void onLongClick(List<Word> words);
     }
 
     public SumAd(OnKeywordClick onKeywordClick, OnLongKeywordClick onTwoKeywords) {
         this.onKeywordClick = onKeywordClick;
-        this.onTwoKeywords = onTwoKeywords;
+        this.onLongClick = onTwoKeywords;
         this.pressed = -1;
     }
 }

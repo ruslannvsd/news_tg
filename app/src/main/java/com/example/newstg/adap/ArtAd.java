@@ -124,7 +124,7 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         for (String item : wordsToStyle) {
             String[] splitWords = item.split("[/_]");
             for (String word : splitWords) {
-                coloring(sb, word, fullText, Color.GRAY, false);
+                coloring(sb, word, fullText, Color.YELLOW, false);
             }
         }
         if (wordsSpecific != null) {

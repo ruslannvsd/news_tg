@@ -1,5 +1,7 @@
 package com.example.newstg.utils;
 
+import android.widget.TextView;
+
 import com.example.newstg.obj.Article;
 import com.example.newstg.obj.Word;
 
@@ -18,5 +20,9 @@ public class Count {
             count = 0;
         }
         return keywords;
+    }
+    public void articleAmountText(TextView unique, int amount) {
+        String articleText = amount + " " + (amount == 1 ? "ARTICLE" : "ARTICLES");
+        unique.setText(articleText);
     }
 }
