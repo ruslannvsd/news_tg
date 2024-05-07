@@ -5,7 +5,6 @@ import static com.example.newstg.consts.Cons.FORWARDED;
 import static com.example.newstg.consts.Cons.LINK;
 import static com.example.newstg.consts.Cons.SECTION;
 
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -46,12 +45,11 @@ public class ArticleMaking {
     }
 
     private Pair<String, String> forwardArt(Element forwarded) {
-        if (forwarded != null) {
-            sourceTitle = forwarded.text();
-            sourceLink = forwarded.attr("href");
-        }
+        sourceTitle = forwarded.text();
+        sourceLink = forwarded.attr("href");
         return new Pair<>(sourceTitle, sourceLink);
     }
+
     private String appending(String original, String toAppend) {
         if (toAppend != null && !toAppend.isEmpty()) {
             return original.isEmpty() ? toAppend : original + "|" + toAppend;

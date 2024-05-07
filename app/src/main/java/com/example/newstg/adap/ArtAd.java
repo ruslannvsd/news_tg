@@ -15,17 +15,19 @@ import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.newstg.R;
+import com.example.newstg.consts.Cons;
 import com.example.newstg.databinding.ArLayBinding;
 import com.example.newstg.obj.Article;
 import com.example.newstg.utils.TimeFuncs;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Locale;
@@ -50,6 +52,7 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
     public void onBindViewHolder(@NonNull ArticleViewHolder h, int p) {
         Article art = articles.get(p);
         int color = cardBgColor(art.time, ctx);
+        ImageView img = h.bnd.img;
         h.bnd.card.setBackgroundColor(color);
         h.bnd.channel.setBackgroundColor(art.color);
         long currentTimeMillis = System.currentTimeMillis();
@@ -62,18 +65,17 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
 
         h.bnd.artTime.setText(timeDifference + time);
         h.bnd.keyword.setText(String.valueOf(art.keywords));
+        h.bnd.artTime.setText(timeDifference + time);
         if (!Objects.equals(art.image, "IMG")) {
-            Glide.with(ctx).load(R.drawable.line).placeholder(R.drawable.load).into(h.bnd.divider);
-            Glide.with(ctx)
+            img.setVisibility(View.VISIBLE);
+            Picasso.get().load(R.drawable.line).placeholder(R.drawable.load).into(h.bnd.divider);
+            Picasso.get()
                     .load(art.image)
-                    .dontTransform()
-                    .skipMemoryCache(true)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .placeholder(R.drawable.load)
-                    .into(h.bnd.img);
+                    .noFade().memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                    .placeholder(R.drawable.load).into(img);
         } else {
-            Glide.with(ctx).load(R.drawable.line).placeholder(R.drawable.load).into(h.bnd.divider);
-            h.bnd.img.setVisibility(View.GONE);
+            img.setVisibility(View.GONE);
+            Picasso.get().load(R.drawable.line).placeholder(R.drawable.load).into(h.bnd.divider);
         }
         SpannableStringBuilder textWithBold = wordStyling(art.body, art.keywords, words);
         h.bnd.artBody.setText(textWithBold);
@@ -163,10 +165,18 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         linkify(titles[0], links[0], main);
         if (titles.length > 1 && links.length > 1 && !titles[1].isEmpty() && !links[1].isEmpty()) {
             forward.setVisibility(View.VISIBLE);
-            linkify(titles[1], links[1], forward);
+            maxLength(titles[1], links[1], forward, Cons.LENGTH);
         } else {
             forward.setText(null);
             forward.setVisibility(View.GONE);
         }
+    }
+
+    private void maxLength(String title, String link, TextView textView, int length) {
+        String text = title.trim();
+        if (text.length() > length) {
+            text = text.substring(0, length - 3) + "...";
+        }
+        linkify(text, link, textView);
     }
 }

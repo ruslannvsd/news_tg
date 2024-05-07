@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
+    int articleSize;
     List<Word> keywords = emptyList();
     Set<String> associated = null;
     Context ctx;
@@ -104,6 +105,10 @@ public class SumAd extends RecyclerView.Adapter<SumAd.SumViewHolder> {
         this.pressed = pressed;
         this.keywords = keywords;
         this.ctx = ctx;
+        if (pressed == -1) {
+            longPressedList = new HashSet<>();
+            associated = null;
+        }
         notifyDataSetChanged();
     }
     public void associated(Set<String> associated, boolean shortClick) {

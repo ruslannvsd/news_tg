@@ -44,7 +44,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
     implementation("org.jsoup:jsoup:1.10.3")
-    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.squareup.picasso:picasso:2.8")
     implementation("androidx.work:work-runtime:2.9.0")
     testImplementation("junit:junit:4.13.2")
     implementation("com.google.android.flexbox:flexbox:3.0.0")
