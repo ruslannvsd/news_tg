@@ -184,13 +184,12 @@ public class GetArt {
                         newsVm.lists().removeObserver(this);
                     }
                 } catch (Exception e) {
-                    Log.e("ObserverError", Objects.requireNonNull(e.getMessage()));
                     newsVm.lists().removeObserver(this);
                     handler.post(() -> {
                         if (dialog != null && dialog.isShowing()) {
                             dialog.dismiss();
                         }
-                        Log.i("Observer", "Error occurred");
+                        Log.e("ObserverError", Objects.requireNonNull(e.getMessage()));
                         Toast.makeText(ctx, "Error occurred", Toast.LENGTH_LONG).show();
                     });
                 }
