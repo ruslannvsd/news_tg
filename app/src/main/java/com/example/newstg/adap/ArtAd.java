@@ -153,16 +153,17 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         }
     }
 
-    private void linkify(String title, String url, TextView tv) {
+    private void linkify(String title, String url, TextView tv, int color) {
         String formattedText = "<a href='" + url + "'>" + title + "</a>";
         tv.setText(Html.fromHtml(formattedText, Html.FROM_HTML_MODE_COMPACT));
+        tv.setLinkTextColor(color);
         tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     private void titlesAndLinks(String title, String link, TextView main, TextView forward) {
         String[] titles = title.split("\\|");
         String[] links = link.split("\\|");
-        linkify(titles[0], links[0], main);
+        linkify(titles[0], links[0], main, Color.YELLOW);
         if (titles.length > 1 && links.length > 1 && !titles[1].isEmpty() && !links[1].isEmpty()) {
             forward.setVisibility(View.VISIBLE);
             maxLength(titles[1], links[1], forward, Cons.LENGTH);
@@ -177,6 +178,6 @@ public class ArtAd extends RecyclerView.Adapter<ArtAd.ArticleViewHolder>{
         if (text.length() > length) {
             text = text.substring(0, length - 3) + "...";
         }
-        linkify(text, link, textView);
+        linkify(text, link, textView, Color.GRAY);
     }
 }

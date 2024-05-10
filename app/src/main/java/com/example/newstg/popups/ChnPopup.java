@@ -2,10 +2,10 @@ package com.example.newstg.popups;
 
 import android.content.Context;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -17,9 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.newstg.R;
 import com.example.newstg.adap.ChnAd;
 import com.example.newstg.adap.ChnColorUpdAd;
+import com.example.newstg.consts.Cons;
 import com.example.newstg.data.NewsVM;
 import com.example.newstg.databinding.ChnUpdPopupBinding;
-import com.example.newstg.databinding.ColorMenuBinding;
 import com.example.newstg.obj.Chn;
 
 public class ChnPopup {
@@ -27,6 +27,7 @@ public class ChnPopup {
     PopupWindow window;
     EditText chnNameEt;
     EditText chnLinkEt;
+    Button update;
     Chn chn;
     NewsVM newsVM;
     ChnAd chnAd;
@@ -44,19 +45,22 @@ public class ChnPopup {
         setupPopupWindow(popupView);
         chnNameEt = bnd.chnName;
         chnLinkEt = bnd.chnLink;
+        update = bnd.update;
         RecyclerView rv = bnd.colorsRv;
         chnNameEt.setText(chn.name);
-        chnLinkEt.setText(chn.link);
+        String[] linkParts = chn.link.split("/");
+        chnLinkEt.setText(linkParts[linkParts.length - 1]);
         chnNameEt.setBackgroundColor(chn.category);
-        chnNameEt.setOnKeyListener(this::titleClick);
+        update.setBackgroundColor(color);
         chnColorAd = new ChnColorUpdAd(color -> {
             this.color = color;
             chnNameEt.setBackgroundColor(color);
+            update.setBackgroundColor(color);
         });
-        bnd.update.setOnClickListener(v -> {
+        update.setOnClickListener(v -> {
             Chn updChn = new Chn(
                     chn.id,
-                    chnLinkEt.getText().toString(),
+                    Cons.PREFIX + chnLinkEt.getText().toString(),
                     chnNameEt.getText().toString(),
                     color
             );
@@ -73,16 +77,7 @@ public class ChnPopup {
         window.showAtLocation(popupView, Gravity.CENTER, 0, 0);
         PopupWindowCompat.setWindowLayoutType(window, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
     }
-    private boolean titleClick(View v, int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-            String title = chnNameEt.getText().toString().trim();
-            Chn newChn = new Chn(chn.id, chn.link, title, chn.category);
-            newsVM.updChn(newChn);
-            chnAd.notifyItemChanged(p);
-            window.dismiss();
-        }
-        return true;
-    }
+
     public static void setRv(RecyclerView rv, ChnColorUpdAd chnColorAd, Context ctx) {
         chnColorAd.setColors(ctx);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(ctx, 5);

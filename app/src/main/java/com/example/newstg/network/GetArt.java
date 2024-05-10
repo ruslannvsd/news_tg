@@ -20,7 +20,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -102,85 +101,98 @@ public class GetArt {
         Observer<Pair<List<Word>, List<Chn>>> observer = new Observer<Pair<List<Word>, List<Chn>>>() {
             @Override
             public void onChanged(Pair<List<Word>, List<Chn>> lists) {
-                List<Word> keywords = lists.first;
-                List<Chn> channels = lists.second;
-                List<Word> newKws = new ArrayList<>();
-                if (words != null) {
-                    for (String wd : words) {
-                        boolean matchFound = false;
-                        for (Word kw : keywords) {
-                            if (kw.getWord().equals(wd)) {
-                                newKws.add(kw);
-                                matchFound = true;
-                                break;
+                try {
+                    List<Word> keywords = lists.first;
+                    List<Chn> channels = lists.second;
+                    List<Word> newKws = new ArrayList<>();
+                    if (words != null) {
+                        for (String wd : words) {
+                            boolean matchFound = false;
+                            for (Word kw : keywords) {
+                                if (kw.getWord().equals(wd)) {
+                                    newKws.add(kw);
+                                    matchFound = true;
+                                    break;
+                                }
                             }
-                        }
-                        if (!matchFound) {
-                            Word newWd = new Word(0, wd, ContextCompat.getColor(ctx, R.color.white), 0, false);
-                            newKws.add(newWd);
-                            Log.d("Word", newWd.getWord());
+                            if (!matchFound) {
+                                Word newWd = new Word(0, wd, ContextCompat.getColor(ctx, R.color.white), 0, false);
+                                newKws.add(newWd);
+                                Log.d("Word", newWd.getWord());
+                            }
                         }
                     }
-                }
 
-                if (channels != null) {
-                    Collections.shuffle(channels);
-                    progress(channels.size());
-                    Toast.makeText(ctx, String.valueOf(channels.size()), Toast.LENGTH_SHORT).show();
-                    Callable<Void> task = () -> {
-                        List<Article> articles = new ArrayList<>();
-                        int progress = 0;
-                        for (Chn chn : channels) {
-                            String link = chn.link;
-                            final int currentProgress = ++progress;
-                            handler.post(() -> {
-                                if (dialog != null && bnd != null) {
-                                    bnd.progressBar.setProgress(currentProgress);
-                                    String text = String.format(Locale.UK, "%d/%d\n%s", currentProgress, channels.size(), chn.name);
-                                    bnd.progressText.setText(text);
-                                }
-                            });
-                            if (words == null) {
-                                articles.addAll(gettingArticles(link, hours, chn.category, keywords));
-                            } else {
-                                articles.addAll(gettingArticles(link, hours, chn.category, newKws));
-                            }
-                        }
-                        if (articles.isEmpty()) {
-                            handler.post(() -> Toast.makeText(ctx, "Nothing has been found", Toast.LENGTH_LONG).show());
-                        } else {
-                            List<Article> finalList;
-                            if (keywords.size() == 1) {
-                                finalList = sorting(articles);
-                            } else {
-                                finalList = merging(articles);
-                            }
-                            handler.post(() -> {
-                                newsVm.clearArticles();
-                                newsVm.setArticles(finalList);
-
-                                if (words == null) {
-                                    newsVm.setWords(sortingNum(new Count().results(keywords, finalList), ctx));
-                                } else {
-                                    for (Word kw : newKws) {
-                                        Log.i("New Kw", kw.getWord());
+                    if (channels != null) {
+                        Collections.shuffle(channels);
+                        progress(channels.size());
+                        Toast.makeText(ctx, String.valueOf(channels.size()), Toast.LENGTH_SHORT).show();
+                        Callable<Void> task = () -> {
+                            List<Article> articles = new ArrayList<>();
+                            int progress = 0;
+                            for (Chn chn : channels) {
+                                String link = chn.link;
+                                Log.i("Link", link);
+                                final int currentProgress = ++progress;
+                                handler.post(() -> {
+                                    if (dialog != null && bnd != null) {
+                                        bnd.progressBar.setProgress(currentProgress);
+                                        String text = String.format(Locale.UK, "%d/%d\n%s", currentProgress, channels.size(), chn.name);
+                                        bnd.progressText.setText(text);
                                     }
-                                    newsVm.setWords(sortingNum(new Count().results(newKws, finalList), ctx));
+                                });
+                                if (words == null) {
+                                    articles.addAll(gettingArticles(link, hours, chn.category, keywords));
+                                } else {
+                                    articles.addAll(gettingArticles(link, hours, chn.category, newKws));
                                 }
-                                dialog.dismiss();
-                            });
-                        }
-                        handler.post(() -> {
-                            if (dialog != null && dialog.isShowing()) {
-                                dialog.dismiss();
                             }
-                        });
-                        Toast.makeText(ctx, "Search completed.", Toast.LENGTH_SHORT).show();
-                        return null;
-                    };
-                    executorService.submit(task);
-                    window.dismiss();
+                            if (articles.isEmpty()) {
+                                handler.post(() -> Toast.makeText(ctx, "Nothing has been found", Toast.LENGTH_LONG).show());
+                            } else {
+                                List<Article> finalList;
+                                if (keywords.size() == 1) {
+                                    finalList = sorting(articles);
+                                } else {
+                                    finalList = merging(articles);
+                                }
+                                handler.post(() -> {
+                                    newsVm.clearArticles();
+                                    newsVm.setArticles(finalList);
+
+                                    if (words == null) {
+                                        newsVm.setWords(sortingNum(new Count().results(keywords, finalList), ctx));
+                                    } else {
+                                        for (Word kw : newKws) {
+                                            Log.i("New Kw", kw.getWord());
+                                        }
+                                        newsVm.setWords(sortingNum(new Count().results(newKws, finalList), ctx));
+                                    }
+                                    dialog.dismiss();
+                                });
+                            }
+                            handler.post(() -> {
+                                if (dialog != null && dialog.isShowing()) {
+                                    dialog.dismiss();
+                                }
+                            });
+                            Toast.makeText(ctx, "Search completed.", Toast.LENGTH_SHORT).show();
+                            return null;
+                        };
+                        executorService.submit(task);
+                        window.dismiss();
+                        newsVm.lists().removeObserver(this);
+                    }
+                } catch (Exception e) {
+                    Log.e("ObserverError", Objects.requireNonNull(e.getMessage()));
                     newsVm.lists().removeObserver(this);
+                    handler.post(() -> {
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                        }
+                        Log.i("Observer", "Error occurred");
+                        Toast.makeText(ctx, "Error occurred", Toast.LENGTH_LONG).show();
+                    });
                 }
             }
         };
@@ -199,7 +211,7 @@ public class GetArt {
     }
 
     private Document fetchDoc(String url) throws IOException {
-        return Jsoup.connect(url).timeout(20 * 1000).get();
+        return Jsoup.connect(url).timeout(20 * 2000).get();
     }
 
     private List<Article> gettingArticles(String link, int hours, int color, List<Word> keywords) {
